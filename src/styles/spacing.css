@@ -1,0 +1,43 @@
+:root {
+  /* Базовая сетка (px / 16) */
+  --ft--spacing-size-8: 0.5rem;
+  --ft--spacing-size-16: 1rem;
+  --ft--spacing-size-20: 1.25rem;
+  --ft--spacing-size-24: 1.5rem;
+  --ft--spacing-size-28: 1.75rem;
+  --ft--spacing-size-32: 2rem;
+  --ft--spacing-size-40: 2.5rem;
+  --ft--spacing-size-48: 3rem;
+  --ft--spacing-size-64: 4rem;
+  --ft--spacing-size-80: 5rem;
+  --ft--spacing-size-96: 6rem;
+  --ft--spacing-size-120: 7.5rem;
+
+  /* Глобальные переменные на основе сетки */
+  --ft--global-padding: 2.5rem;
+  --ft--global-gap: 1rem;
+}
+
+/* Адаптивные значения для мобильных устройств */
+@media (max-width: 768px) {
+  :root {
+    --ft--global-padding: 1rem;
+    --ft--global-gap: 0.75rem;
+    --ft--spacing-size-16: 0.75rem;
+    --ft--spacing-size-20: 1rem;
+    --ft--spacing-size-24: 1.25rem;
+    --ft--spacing-size-28: 1.5rem;
+    --ft--spacing-size-32: 1.75rem;
+    --ft--spacing-size-40: 2.25rem;
+    --ft--spacing-size-48: 2.5rem;
+    --ft--spacing-size-64: 3rem;
+    --ft--spacing-size-80: 4rem;
+    --ft--spacing-size-96: 6rem;
+    --ft--spacing-size-120: 7.5rem;
+  }
+}
+
+.container {
+  padding: 0 var(--ft--global-padding);
+  margin: 0 auto;
+}

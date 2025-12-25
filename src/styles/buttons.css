@@ -1,0 +1,64 @@
+.btn-group {
+    display: flex;
+    gap: 1rem;
+}
+
+button, .btn {
+    font-size: 1.15rem;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 3rem;
+    border: 1px solid black;
+    color: black;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: black;
+    color: white;
+}
+
+.link-underline {
+    font-size: 1.15rem;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+@media (hover: hover) {
+  button:hover, .btn:hover  {
+    color: var(--ft-accent-color);
+    border-color: var(--ft-accent-color);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--ft-accent-color);
+    color: white;
+  }
+}
+
+@media (hover: none) {
+  button:active, .btn:active {
+    color: var(--ft-accent-color);
+    border-color: var(--ft-accent-color);
+  }
+
+  .btn-primary:active {
+    background-color: var(--ft-accent-color);
+    color: white;
+  }
+}
+
+@media (max-width: 479px) {
+    .btn-group {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}

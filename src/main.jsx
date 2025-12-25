@@ -1,10 +1,23 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
+import { LocaleProvider } from "./context/LocaleContext";
 
-createRoot(document.getElementById('root')).render(
+import App from "./App.jsx";
+import "./styles/base.css";
+import "./styles/variables.css";
+import "./styles/global.css";
+import "./styles/colors.css";
+import "./styles/spacing.css";
+import "./styles/typography.css";
+import "./styles/buttons.css";
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <HelmetProvider>
+      <LocaleProvider>
+        <App />
+      </LocaleProvider>
+    </HelmetProvider>
+  </StrictMode>
+);

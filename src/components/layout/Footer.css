@@ -1,0 +1,33 @@
+.footer {
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--ft-border-color);
+}
+
+.footer__container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer__link {
+  text-decoration: underline;
+}
+
+@media (hover: hover) {
+  .footer__link:hover {
+    color: var(--ft-accent-color);
+  }
+}
+
+@media (hover: none) {
+  .footer__link:active {
+    color: var(--ft-accent-color);
+  }
+}
+
+@media (max-width: 768px) {
+  .footer__container {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+  }
+}

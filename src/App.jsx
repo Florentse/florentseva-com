@@ -5,8 +5,11 @@ import Footer from "./components/layout/Footer";
 import useGlobalSections from "./hooks/useGlobalSections";
 import useCurrentLocale from "./hooks/useCurrentLocale";
 
+import ScrollToTop from "./components/common/ScrollToTop";
+
 import Home from "./pages/Home";
 import Services from "./pages/Services";
+import ServiceTemplate from "./pages/ServiceTemplate";
 import Cases from "./pages/Cases";
 import Products from "./pages/Products";
 import Blog from "./pages/Blog";
@@ -25,6 +28,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div className="app-provider" data-lang={locale?.code || "en"}>
         <Header
           data={sections.header}
@@ -36,6 +40,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Services />} />
+            <Route path="/services/:slug" element={<ServiceTemplate />} />
             <Route path="/cases" element={<Cases />} />
             <Route path="/products" element={<Products />} />
             <Route path="/blog" element={<Blog />} />

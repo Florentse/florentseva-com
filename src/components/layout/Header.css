@@ -67,10 +67,11 @@
   padding: 0;
   border-radius: 0;
   border: none;
+  background: none;
 }
 
 .lang-btn.active {
-  opacity: 0.5;
+  opacity: 0.3;
   pointer-events: none;
 }
 

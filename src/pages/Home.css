@@ -1,6 +1,7 @@
 .h-hero {
   width: 100%;
-  padding: var(--ft--spacing-size-80) 0;
+  padding-top: var(--ft--spacing-size-80);
+  padding-bottom: var(--ft--spacing-size-64);
 }
 
 .h-hero__container {
@@ -93,7 +94,7 @@
 .h-process__item {
   display: flex;
   flex-direction: column;
-  gap: var(--ft--spacing-size-16);
+  gap: 0.5rem;
   padding-right: var(--ft--spacing-size-20);
 }
 
@@ -108,7 +109,7 @@
 }
 
 .h-cta__title-wrap {
-  max-width: 40rem;
+  max-width: 33rem;
 }
 
 [data-lang="ru"] .h-hero__heading-wrap {
@@ -122,6 +123,11 @@
 [data-lang="ru"] .h-process__heading-wrap {
   max-width: 50rem;
   margin-left: 25%;
+}
+
+[data-lang="ru"] .h-big-text__text-wrap {
+    max-width: 39rem;
+    margin-left: 25%;
 }
 
 @media (max-width: 768px) {
@@ -145,7 +151,8 @@
     padding: 0;
   }
 
-  [data-lang="ru"] .h-process__heading-wrap {
+  [data-lang="ru"] .h-process__heading-wrap,
+  [data-lang="ru"] .h-big-text__text-wrap  {
     max-width: 50rem;
     margin-left: 0;
   }

@@ -9,14 +9,25 @@ export function LocaleProvider({ children }) {
 
   useEffect(() => {
     if (!loading && locales.length > 0 && !currentLocale) {
-      // 1. Проверяем, есть ли сохраненный код языка в браузере
+      // 1. Проверяем ручной выбор в localStorage
       const savedCode = localStorage.getItem("app_lang");
-      const savedLoc = locales.find((l) => l.code === savedCode);
 
-      // 2. Если есть — берем его, если нет — дефолтный из базы
-      const defaultLoc =
-        savedLoc || locales.find((l) => l.is_default) || locales[0];
-      setCurrentLocale(defaultLoc);
+      // 2. Если в localStorage пусто, проверяем язык браузера
+      let targetCode = savedCode;
+      if (!targetCode) {
+        const browserLang = navigator.language || navigator.userLanguage;
+        if (browserLang.startsWith("ru")) {
+          targetCode = "ru"; // Код должен совпадать с тем, что в вашей базе Airtable
+        }
+      }
+
+      const foundLoc = locales.find((l) => l.code === targetCode);
+
+      // 3. Берем найденный (из памяти или браузера), иначе дефолтный из базы, иначе первый попавшийся
+      const finalLoc =
+        foundLoc || locales.find((l) => l.is_default) || locales[0];
+
+      setCurrentLocale(finalLoc);
     }
   }, [locales, loading, currentLocale]);
 

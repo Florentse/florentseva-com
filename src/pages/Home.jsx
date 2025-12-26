@@ -79,9 +79,8 @@ const PopularServices = ({ data }) => {
         </div>
 
         <div className="btn-group">
-          {data.cta && (
-            <button className="btn btn-secondary">{data.cta.label}</button>
-          )}
+          <Link to="/services" className="btn btn-secondary">{data.cta.label}</Link>
+
         </div>
       </div>
     </section>
@@ -187,8 +186,8 @@ const Process = ({ data }) => (
 );
 
 const Cta = ({ data }) => (
-  <section className="h-cta">
-    <div className="container h-cta__container">
+  <section className="cta">
+    <div className="container cta__container">
       <div className="h-cta__title-wrap">
         <h3>{data.text}</h3>
       </div>

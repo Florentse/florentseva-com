@@ -56,6 +56,10 @@
 .header__actions button,
 .header__actions .btn {
   font-size: 1rem;
+  max-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  line-height: 100%;
 }
 
 .lang-switcher {

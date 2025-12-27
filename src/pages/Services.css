@@ -227,7 +227,7 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-top: 1px solid var(--ft-border-color);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--ft-border-color);
     gap: 1.5rem;
 
     scrollbar-width: none;

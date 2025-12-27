@@ -137,6 +137,16 @@
   gap: var(--ft--global-gap);
 }
 
+.s-services-list__filters-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--global-gap);
+  align-self: flex-start;
+  align-items: flex-start;
+  position: sticky;
+  top: 8rem;
+}
+
 .service-card {
   position: relative;
 }
@@ -180,7 +190,7 @@
   .s-hero__container,
   .s-solutions__container,
   .faqs__container,
-  .s-services-list__container  {
+  .s-services-list__container {
     display: flex;
     flex-direction: column;
     gap: var(--ft--spacing-size-32);
@@ -189,12 +199,43 @@
   .s-process__list {
     grid-template-columns: repeat(1, 1fr);
   }
+
   .s-hero__container {
     gap: var(--ft--spacing-size-80);
+  }
+
+  .s-services-list__container {
+    gap: var(--ft--spacing-size-16);
   }
 
   .s-quote__text-wrap {
     max-width: 100%;
     margin: 0;
+  }
+
+  .s-services-list__filters-wrap {
+    padding: var(--ft--global-padding);
+    box-sizing: content-box;
+    margin-left: calc(var(--ft--global-padding) * -1);
+    z-index: 10;
+    flex-direction: row;
+    overflow: auto;
+    max-width: 100%;
+    top: 2.3rem;
+    background-color: rgba(239, 239, 239, 0.5);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 1.5rem;
+
+    scrollbar-width: none;
+    /* Скрываем скролл-бар для IE и Edge */
+    -ms-overflow-style: none;
+  }
+
+  .s-services-list__filters-wrap::-webkit-scrollbar {
+    display: none;
   }
 }

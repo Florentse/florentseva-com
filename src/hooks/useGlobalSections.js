@@ -19,7 +19,7 @@ export default function useGlobalSections(keys) {
       const found = {};
       
       keys.forEach(key => {
-        const section = allSections.find(s => s.section_key === key);
+        const section = allSections.find(s => s.section_key === key && (s.is_active === "checked" || s.is_active === true));
         if (!section) return;
 
         const translation = allTranslations.find(t => 

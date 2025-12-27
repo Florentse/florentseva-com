@@ -1,0 +1,69 @@
+.a-hero {
+  padding-top: var(--ft--spacing-size-80);
+  padding-bottom: var(--ft--spacing-size-40);
+}
+
+.a-hero__text-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--spacing-size-32);
+  max-width: calc(50% - var(--ft--global-gap));
+}
+
+.a-philosophy {
+  padding-top: var(--ft--spacing-size-40);
+  padding-bottom: var(--ft--spacing-size-40);
+}
+
+.a-philosophy__wrap {
+  max-width: calc(50% - var(--ft--global-gap));
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--global-gap);
+}
+
+.a-philosophy__quote {
+  padding-left: var(--ft--global-gap);
+  border-left: 2px solid var(--ft-accent-color);
+  max-width: 38rem;
+}
+
+.a-philosophy__author {
+  padding-left: var(--ft--global-gap);
+}
+
+.a-focus {
+  padding-top: var(--ft--spacing-size-40);
+  padding-bottom: var(--ft--spacing-size-80);
+}
+
+.a-focus__title {
+    margin-bottom: var(--ft--spacing-size-32);
+}
+
+.a-focus__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ft--global-gap);
+}
+
+.a-focus__card {
+  padding: var(--ft--spacing-size-20);
+  border: 1px solid var(--ft-border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--spacing-size-20);
+}
+
+@media (max-width: 768px) {
+    .a-hero__text-wrap,
+    .a-philosophy__wrap {
+        max-width: 100%;
+    }
+
+    .a-focus__grid {
+        grid-template-columns: 1fr;
+    }
+}

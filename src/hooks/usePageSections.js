@@ -32,8 +32,10 @@ export default function usePageSections(pageSlug) {
         : [];
 
       // 3. сами секции
-      const sectionsOfPage = pageSections.filter((s) =>
-        pageSectionRecordIds.includes(s.recordId)
+      const sectionsOfPage = pageSections.filter(
+        (s) =>
+          pageSectionRecordIds.includes(s.recordId) &&
+          (s.is_active === "checked" || s.is_active === true)
       );
 
       // 4. переводы по текущей локали
@@ -61,12 +63,12 @@ export default function usePageSections(pageSlug) {
             try {
               // 1. Предварительная очистка
               const cleanJson = rawContent
-                .replace(/\u00a0/g, " ") 
+                .replace(/\u00a0/g, " ")
                 .replace(/\u201c|\u201d/g, '"')
-                .replace(/\\_/g, "_") 
-                .replace(/'/g, '"') 
-                .replace(/,\s*([\]}])/g, "$1") 
-                .replace(/[\u0000-\u001F]+/g, " ") 
+                .replace(/\\_/g, "_")
+                .replace(/'/g, '"')
+                .replace(/,\s*([\]}])/g, "$1")
+                .replace(/[\u0000-\u001F]+/g, " ")
                 .trim();
 
               contentData = JSON.parse(cleanJson);

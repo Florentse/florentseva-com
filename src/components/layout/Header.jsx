@@ -1,5 +1,5 @@
-import { useState } from "react"; // Добавляем импорт
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import "./Header.css";
 
 export default function Header({ data, currentLocale, onLocaleChange }) {
@@ -29,14 +29,16 @@ export default function Header({ data, currentLocale, onLocaleChange }) {
         <div className="header__content">
           <nav className="header__nav">
             {data.menu.map((item, idx) => (
-              <Link
+              <NavLink
                 key={idx}
                 to={item.payload}
-                className="header__link"
-                onClick={() => setIsOpen(false)} // Закрываем при переходе
+                className={({ isActive }) =>
+                  `header__link ${isActive ? "header__link--active" : ""}`
+                }
+                onClick={() => setIsOpen(false)}
               >
                 {item.label}
-              </Link>
+              </NavLink>
             ))}
           </nav>
 

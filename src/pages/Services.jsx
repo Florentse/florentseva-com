@@ -1,5 +1,4 @@
-import React from "react";
-
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 import usePageSections from "../hooks/usePageSections";
@@ -12,17 +11,6 @@ import CardLoader from "../components/common/CardLoader";
 
 import "./Services.css";
 
-const ServicesHero = ({ data }) => (
-  <section className="s-hero">
-    <div className="container">
-      <div className="s-hero__text-wrap">
-        <h1>{data.title}</h1>
-        <p className="body-large">{data.subtitle}</p>
-      </div>
-    </div>
-  </section>
-);
-
 const ServiceCard = ({ service, btnLabel }) => (
   <Link
     to={`/services/${service.slug}`}
@@ -30,7 +18,12 @@ const ServiceCard = ({ service, btnLabel }) => (
     style={{ paddingTop: "1.25rem" }}
   >
     <div className="services-card__category-tags-list">
-      <p className="service-card__category-tag">category-tag</p>
+      {service.categories &&
+        service.categories.map((catName, index) => (
+          <p key={index} className="service-card__category-tag">
+            {catName}
+          </p>
+        ))}
     </div>
 
     <h3 className="title-small">{service.title}</h3>
@@ -39,70 +32,96 @@ const ServiceCard = ({ service, btnLabel }) => (
   </Link>
 );
 
-const ServicesList = ({ data }) => {
-  const { services, loading } = usePublishedServices();
+export default function Services() {
+  const { sections, loading: pageLoading } = usePageSections("services");
+  
+  const { services, categories, loading: servicesLoading } = usePublishedServices();
   const { locale } = useCurrentLocale();
+  
+  const [activeFilter, setActiveFilter] = useState("all");
+
+  if (pageLoading) return <PageLoader />;
 
   const btnLabel = locale?.code === "ru" ? "Подробней" : "View service";
 
-  return (
-    <section className="s-services-list">
-      <div className="container s-services-list__container">
-        <div className="s-services-list__filters-wrap">
-          <button className="btn-filter btn-filter--active">
-            {data.filters.all_label}
-          </button>
-        </div>
-
-        <div className="s-services-list__grid">
-          {loading ? (
-            <>
-              <CardLoader />
-              <CardLoader />
-              <CardLoader />
-            </>
-          ) : (
-            services.map((service) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-                btnLabel={btnLabel}
-              />
-            ))
-          )}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const DefaultSection = ({ data }) => (
-  <section style={{ border: "1px dashed red", padding: "10px" }}>
-    <strong>Unknown section key:</strong> {data.key}
-  </section>
-);
-
-const SECTION_COMPONENTS = {
-  "s-hero": ServicesHero,
-  "s-services-list": ServicesList,
-};
-
-export default function Services() {
-  const { sections, loading } = usePageSections("services");
-
-  if (loading) return <PageLoader />;
+  const filteredServices = activeFilter === "all"
+    ? services
+    : services.filter(service => service.categoryIds?.includes(activeFilter));
 
   return (
-    <main>
+    <>
       {sections.map((section, index) => {
-        const Component = SECTION_COMPONENTS[section.key] || DefaultSection;
+        // --- Секция HERO ---
+        if (section.key === "s-hero") {
+          return (
+            <div key={section.id}>
+              <section className="s-hero">
+                <div className="container">
+                  <div className="s-hero__text-wrap">
+                    <h1>{section.title}</h1>
+                    <p className="body-large">{section.subtitle}</p>
+                  </div>
+                </div>
+              </section>
+              {/* Логотипы стека сразу после Hero */}
+              <StackLogos />
+            </div>
+          );
+        }
+
+        // --- Секция СПИСОК УСЛУГ ---
+        if (section.key === "s-services-list") {
+          return (
+            <section key={section.id} className="s-services-list">
+              <div className="container s-services-list__container">
+                <div className="s-services-list__filters-wrap">
+                  <button 
+                    className={`btn-filter ${activeFilter === "all" ? "btn-filter--active" : ""}`}
+                    onClick={() => setActiveFilter("all")}
+                  >
+                    {section.filters?.all_label || "All"}
+                  </button>
+
+                  {!servicesLoading && categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      className={`btn-filter ${activeFilter === cat.id ? "btn-filter--active" : ""}`}
+                      onClick={() => setActiveFilter(cat.id)}
+                    >
+                      {cat.title}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="s-services-list__grid">
+                  {servicesLoading ? (
+                    <>
+                      <CardLoader />
+                      <CardLoader />
+                      <CardLoader />
+                    </>
+                  ) : (
+                    filteredServices.map((service) => (
+                      <ServiceCard
+                        key={service.id}
+                        service={service}
+                        btnLabel={btnLabel}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        // --- Заглушка для неизвестных секций ---
         return (
-          <div key={section.id}>
-            <Component data={section} />
-            {index === 0 && <StackLogos />}
-          </div>
+          <section key={section.id} style={{ border: "1px dashed red", padding: "10px" }}>
+            <strong>Unknown section key:</strong> {section.key}
+          </section>
         );
       })}
-    </main>
+    </>
   );
 }

@@ -74,7 +74,9 @@
   background: none;
 }
 
-.lang-btn.active {
+.lang-btn.active,
+.header__link--active
+ {
   opacity: 0.3;
   pointer-events: none;
 }

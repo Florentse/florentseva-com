@@ -16,6 +16,8 @@
   /* Глобальные переменные на основе сетки */
   --ft--global-padding: 2.5rem;
   --ft--global-gap: 1rem;
+
+  --scroll-top-offset: 96px;
 }
 
 /* Адаптивные значения для мобильных устройств */
@@ -34,6 +36,8 @@
     --ft--spacing-size-80: 4rem;
     --ft--spacing-size-96: 6rem;
     --ft--spacing-size-120: 7.5rem;
+
+    --scroll-top-offset: 32px ;
   }
 }
 

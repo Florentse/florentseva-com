@@ -1,0 +1,132 @@
+.case-card {
+  position: static;
+  width: 100%;
+  display: flex;
+  gap: var(--ft--spacing-size-20);
+  padding: var(--ft--spacing-size-40) 0;
+  border-bottom: 1px solid var(--ft-border-color);
+  transition: all 0.4s ease;
+}
+
+.case-card__image-wrap {
+  position: fixed;
+  left: 50%;
+  right: auto;
+  top: var(--ft--spacing-size-120);
+  width: auto;
+  height: 35rem;
+  z-index: 1000;
+}
+
+.case-card__image {
+  height: 100%;
+}
+
+.case-card__text-wrap {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--spacing-size-20);
+}
+
+.case-card__text-wrap ul {
+  margin: 0;
+  padding: 0;
+  padding-left: 1.25rem;
+}
+
+.case-card__link {
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.c-hero {
+  padding: var(--ft--spacing-size-80) 0;
+}
+
+.c-hero__text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--spacing-size-32);
+  max-width: 31rem;
+}
+
+.c-cases-list__grid {
+  padding-bottom: var(--ft--spacing-size-80);
+}
+
+.c-cases-list__filters-wrap {
+  display: flex;
+  gap: 1.5rem;
+  padding: var(--ft--spacing-size-20) var(--ft--global-padding);
+  margin-left: calc(var(--ft--global-padding) * -1);
+  box-sizing: content-box;
+  background-color: rgba(239, 239, 239, 0.5);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  position: sticky;
+  top: 3.5rem;
+
+  scrollbar-width: none;
+  /* Скрываем скролл-бар для IE и Edge */
+  -ms-overflow-style: none;
+  overflow: auto;
+  z-index: 10;
+}
+
+.c-cases-list__filters-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .case-card__image-wrap {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .case-card:hover .case-card__image-wrap {
+    opacity: 1;
+  }
+
+  .case-card:hover {
+    border-color: var(--ft-accent-color);
+  }
+}
+
+@media (max-width: 1200px) {
+  .case-card__image-wrap {
+    position: relative;
+    left: 3rem;
+    max-height: 10rem;
+    top: 1rem;
+    bottom: 1rem;
+    z-index: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .c-cases-list__filters-wrap {
+    top: 2.75rem;
+    padding: var(--ft--global-padding);
+  }
+
+  .case-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .case-card__text-wrap {
+    width: 100%;
+  }
+
+  .case-card__image-wrap {
+    max-height: 20rem;
+    left: 0;
+    top: 0;
+    bottom: 0;
+  }
+}

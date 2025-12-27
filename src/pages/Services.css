@@ -221,7 +221,7 @@
     flex-direction: row;
     overflow: auto;
     max-width: 100%;
-    top: 2.3rem;
+    top: 2.75rem;
     background-color: rgba(239, 239, 239, 0.5);
 
     backdrop-filter: blur(10px);

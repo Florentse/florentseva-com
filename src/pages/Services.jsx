@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
 import usePageSections from "../hooks/usePageSections";
@@ -34,15 +35,29 @@ const ServiceCard = ({ service, btnLabel }) => (
 
 export default function Services() {
   const { sections, loading: pageLoading } = usePageSections("services");
-  
   const { services, categories, loading: servicesLoading } = usePublishedServices();
   const { locale } = useCurrentLocale();
-  
   const [activeFilter, setActiveFilter] = useState("all");
+  const scrollRef = useRef(null);
 
   if (pageLoading) return <PageLoader />;
 
   const btnLabel = locale?.code === "ru" ? "Подробней" : "View service";
+
+  const handleFilterClick = (id) => {
+    setActiveFilter(id);
+    
+    if (scrollRef.current) {
+      // Получаем значение офсета из CSS переменной (превращаем в число)
+      const offset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--scroll-top-offset')) || 0;
+      const elementPosition = scrollRef.current.getBoundingClientRect().top + window.pageYOffset;
+      
+      window.scrollTo({
+        top: elementPosition - offset,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const filteredServices = activeFilter === "all"
     ? services
@@ -72,12 +87,12 @@ export default function Services() {
         // --- Секция СПИСОК УСЛУГ ---
         if (section.key === "s-services-list") {
           return (
-            <section key={section.id} className="s-services-list">
+            <section key={section.id} className="s-services-list" ref={scrollRef}>
               <div className="container s-services-list__container">
                 <div className="s-services-list__filters-wrap">
                   <button 
                     className={`btn-filter ${activeFilter === "all" ? "btn-filter--active" : ""}`}
-                    onClick={() => setActiveFilter("all")}
+                    onClick={() => handleFilterClick("all")}
                   >
                     {section.filters?.all_label || "All"}
                   </button>
@@ -86,7 +101,7 @@ export default function Services() {
                     <button
                       key={cat.id}
                       className={`btn-filter ${activeFilter === cat.id ? "btn-filter--active" : ""}`}
-                      onClick={() => setActiveFilter(cat.id)}
+                      onClick={() => handleFilterClick(cat.id)}
                     >
                       {cat.title}
                     </button>

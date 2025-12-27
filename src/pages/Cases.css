@@ -48,7 +48,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--ft--spacing-size-32);
-  max-width: 31rem;
+  max-width: 31.3rem;
 }
 
 .c-cases-list__grid {
@@ -68,14 +68,16 @@
 
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
+  border-top: 1px solid var(--ft-border-color);
   position: sticky;
-  top: 3.5rem;
+  top: 4.1rem;
+  width: 100%;
 
   scrollbar-width: none;
   /* Скрываем скролл-бар для IE и Edge */
   -ms-overflow-style: none;
   overflow: auto;
-  z-index: 10;
+  z-index: 1000;
 }
 
 .c-cases-list__filters-wrap::-webkit-scrollbar {
@@ -110,8 +112,8 @@
 
 @media (max-width: 768px) {
   .c-cases-list__filters-wrap {
-    top: 2.75rem;
-    padding: var(--ft--global-padding);
+    top: 2.7rem;
+    padding: 0.75rem var(--ft--global-padding);
   }
 
   .case-card {

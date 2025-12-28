@@ -1,11 +1,11 @@
-// src/hooks/usePopularServices.js
+// src/hooks/useServicesPopular.js
 
 import { useState, useEffect } from "react";
 import { fetchTable } from "../services/airtable";
-import useCurrentLocale from "./useCurrentLocale";
+import useLocaleCurrent from "./useLocaleCurrent";
 
-export default function usePopularServices() {
-  const { locale, loading: localeLoading } = useCurrentLocale();
+export default function useServicesPopular() {
+  const { locale, loading: localeLoading } = useLocaleCurrent();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 

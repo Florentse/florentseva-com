@@ -3,9 +3,9 @@
 import { Link } from "react-router-dom";
 
 import usePageSections from "../hooks/usePageSections";
-import useCurrentLocale from "../hooks/useCurrentLocale";
-import usePopularServices from "../hooks/usePopularServices";
-import useSelectedCases from "../hooks/useSelectedCases";
+import useLocaleCurrent from "../hooks/useLocaleCurrent";
+import useServicesPopular from "../hooks/useServicesPopular";
+import useCasesSelected from "../hooks/useCasesSelected";
 
 import StackLogos from "../components/common/StackLogos";
 import PageLoader from "../components/common/PageLoader";
@@ -46,8 +46,8 @@ const ServiceCard = ({ service, btnLabel }) => (
 );
 
 const PopularServices = ({ data }) => {
-  const { services, loading } = usePopularServices();
-  const { locale } = useCurrentLocale();
+  const { services, loading } = useServicesPopular();
+  const { locale } = useLocaleCurrent();
 
   // Определяем текст кнопки на основе кода текущей локали
   const btnLabel = locale?.code === "ru" ? "Подробней" : "View service";
@@ -122,8 +122,8 @@ const CaseCard = ({ item, btnLabel }) => (
 );
 
 const SelectedCases = ({ data }) => {
-  const { cases, loading } = useSelectedCases();
-  const { locale } = useCurrentLocale();
+  const { cases, loading } = useCasesSelected();
+  const { locale } = useLocaleCurrent();
 
   const btnLabel = locale?.code === "ru" ? "Подробнее" : "View case";
 

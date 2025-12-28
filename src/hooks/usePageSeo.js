@@ -1,4 +1,4 @@
-//src/hooks/useLocales.js
+//src/hooks/usePageSeo.js
 
 import { useEffect, useState } from "react";
 import { fetchPageSeo } from "../services/airtable";

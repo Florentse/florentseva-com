@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import useCurrentLocale from "../hooks/useCurrentLocale";
-import useServiceData from "../hooks/useServiceData";
+import useLocaleCurrent from "../hooks/useLocaleCurrent";
+import useServiceSinglePage from "../hooks/useServiceSinglePage";
 
 import PageLoader from "../components/common/PageLoader";
 import CardLoader from "../components/common/CardLoader";
@@ -219,8 +219,8 @@ const SECTION_COMPONENTS = {
 
 export default function ServiceTemplate() {
   const { slug } = useParams();
-  const { locale } = useCurrentLocale(); // Добавлена эта строка
-  const { sections, loading } = useServiceData(slug);
+  const { locale } = useLocaleCurrent(); // Добавлена эта строка
+  const { sections, loading } = useServiceSinglePage(slug);
 
   const labels = LABELS[locale?.code] || LABELS.en;
 

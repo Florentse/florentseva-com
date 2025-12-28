@@ -19,6 +19,7 @@ button, .btn {
     gap: 0.5rem;
     line-height: 110%;
     align-items: center;
+    justify-content: center;
 }
 
 .btn-primary {
@@ -30,6 +31,7 @@ button, .btn {
     font-size: 1.15rem;
     font-weight: 500;
     text-decoration: underline;
+    transition: color 0.4s ease;
 }
 
 .btn-filter {
@@ -70,6 +72,10 @@ button, .btn {
     background-color: var(--ft-accent-color);
     color: white;
   }
+
+  .link-underline:hover {
+    color: var(--ft-accent-color);
+  }
 }
 
 @media (hover: none) {
@@ -81,6 +87,10 @@ button, .btn {
   .btn-primary:active {
     background-color: var(--ft-accent-color);
     color: white;
+  }
+
+  .link-underline:active {
+    color: var(--ft-accent-color);
   }
 }
 

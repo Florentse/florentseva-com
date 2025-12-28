@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { fetchTable } from "../services/airtable";
-import useCurrentLocale from "./useCurrentLocale";
+import useLocaleCurrent from "./useLocaleCurrent";
 
 export default function usePageSections(pageSlug) {
-  const { locale, loading: localeLoading } = useCurrentLocale();
+  const { locale, loading: localeLoading } = useLocaleCurrent();
 
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);

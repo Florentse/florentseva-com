@@ -3,8 +3,8 @@ import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
 import usePageSections from "../hooks/usePageSections";
-import useCurrentLocale from "../hooks/useCurrentLocale";
-import usePublishedServices from "../hooks/usePublishedServices";
+import useLocaleCurrent from "../hooks/useLocaleCurrent";
+import useServicesPublished from "../hooks/useServicesPublished";
 
 import StackLogos from "../components/common/StackLogos";
 import PageLoader from "../components/common/PageLoader";
@@ -35,8 +35,8 @@ const ServiceCard = ({ service, btnLabel }) => (
 
 export default function Services() {
   const { sections, loading: pageLoading } = usePageSections("services");
-  const { services, categories, loading: servicesLoading } = usePublishedServices();
-  const { locale } = useCurrentLocale();
+  const { services, categories, loading: servicesLoading } = useServicesPublished();
+  const { locale } = useLocaleCurrent();
   const [activeFilter, setActiveFilter] = useState("all");
   const scrollRef = useRef(null);
 

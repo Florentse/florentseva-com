@@ -1,5 +1,5 @@
 .case-card {
-  position: static;
+  position: relative;
   width: 100%;
   display: flex;
   gap: var(--ft--spacing-size-20);
@@ -38,6 +38,22 @@
 .case-card__link {
   align-self: flex-end;
   margin-left: auto;
+}
+
+.case-card__tags {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  position: absolute;
+  right: 0;
+}
+
+.case-card__tag {
+  line-height: 100%;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--ft-border-color);
 }
 
 .c-hero {
@@ -84,6 +100,139 @@
   display: none;
 }
 
+.case-hero {
+  min-height: 50svh;
+  padding-top: var(--ft--spacing-size-64);
+  padding-bottom: var(--ft--spacing-size-40);
+  position: relative;
+  max-width: 100%;
+}
+
+.case-hero__container {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: var(--ft--global-gap);
+}
+
+.case-hero__content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--global-gap);
+}
+
+.case-hero__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--spacing-size-32);
+  margin-top: auto;
+  margin-bottom: 1rem;
+  margin-left: 35%;
+  align-items: flex-start;
+}
+
+.case-hero__column,
+.case-hero__services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.case-hero__img {
+  width: 100%;
+  overflow: hidden;
+}
+
+.case-hero__img img {
+  width: 100%;
+}
+
+.case-content {
+  padding-top: var(--ft--spacing-size-80);
+}
+
+.case-text-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--spacing-size-40);
+}
+
+.case-info-block {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: var(--ft--global-gap);
+}
+
+.case-task-text {
+  display: inline-block;
+  position: relative;
+}
+
+.case-task-text::before {
+  content: "«";
+  margin-right: 2px;
+}
+
+.case-task-text::after {
+  content: "»";
+  margin-left: 2px;
+}
+
+.case-info-block ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--global-gap);
+
+  counter-reset: case-counter;
+}
+
+.case-info-block li {
+  padding: var(--ft--global-gap);
+  border: 1px solid var(--ft-border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--global-gap);
+
+  counter-increment: case-counter;
+}
+
+.case-info-block li::before {
+  content: "#" counter(case-counter, decimal-leading-zero);
+  color: var(--ft-accent-color);
+}
+
+.case-info-block li strong {
+  display: block;
+}
+
+.case-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--ft--global-gap);
+}
+
+.case-gallery__item {
+  width: 100%;
+  overflow: hidden;
+}
+
+.case-gallery__item:nth-child(3n) {
+  grid-column: span 2;
+  max-height: 95svh;
+  display: flex;
+  align-items: center;
+}
+
+.case-gallery__item img {
+  width: 100%;
+  object-fit: cover;
+}
+
 @media (min-width: 1200px) {
   .case-card__image-wrap {
     opacity: 0;
@@ -111,24 +260,61 @@
 }
 
 @media (max-width: 768px) {
-  .c-cases-list__filters-wrap {
-    top: 2.7rem;
-    padding: 0.75rem var(--ft--global-padding);
+
+  .case-card__tags {
+    position: relative;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 0.25rem;
   }
 
-  .case-card {
+  .c-cases-list__filters-wrap {
+    top: 2.7rem;
+    padding: 0.5rem var(--ft--global-padding);
+  }
+
+  .case-card,
+  .case-info-block,
+  .case-gallery {
     display: flex;
     flex-direction: column;
   }
 
   .case-card__text-wrap {
     width: 100%;
+    gap: 1.25rem;
+    margin-bottom: 0.25rem;
   }
 
   .case-card__image-wrap {
-    max-height: 20rem;
+    max-height: none;
     left: 0;
     top: 0;
     bottom: 0;
+    max-width: 100%;
+    overflow: hidden;
+    height: auto;
+  }
+
+  .case-card__image-wrap img {
+    width: 100%;
+    height: auto;
+  }
+
+  .case-hero__container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ft--spacing-size-32);
+  }
+
+  .case-hero__info {
+    margin-top: var(--ft--spacing-size-40);
+    margin-bottom: var(--ft--spacing-size-32);
+  }
+
+  .case-content {
+    padding-top: var(--ft--spacing-size-32);
+    padding-bottom: var(--ft--global-padding);
   }
 }

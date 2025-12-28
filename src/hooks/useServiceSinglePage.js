@@ -1,10 +1,11 @@
-// src/hooks/useServiceData.js
+// src/hooks/useServiceSinglePage.js
+
 import { useState, useEffect } from "react";
 import { fetchTable } from "../services/airtable";
-import useCurrentLocale from "./useCurrentLocale";
+import useLocaleCurrent from "./useLocaleCurrent";
 
-const useServiceData = (slug) => {
-  const { locale, loading: localeLoading } = useCurrentLocale();
+const useServiceSinglePage = (slug) => {
+  const { locale, loading: localeLoading } = useLocaleCurrent();
   const [sections, setSections] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -91,4 +92,4 @@ const useServiceData = (slug) => {
   return { sections, loading };
 };
 
-export default useServiceData;
+export default useServiceSinglePage;

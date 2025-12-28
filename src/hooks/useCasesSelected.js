@@ -1,9 +1,11 @@
+//src/hooks/useCasesSelected.js
+
 import { useState, useEffect } from "react";
 import { fetchTable } from "../services/airtable";
-import useCurrentLocale from "./useCurrentLocale";
+import useLocaleCurrent from "./useLocaleCurrent";
 
-export default function useSelectedCases() {
-  const { locale, loading: localeLoading } = useCurrentLocale();
+export default function useCasesSelected() {
+  const { locale, loading: localeLoading } = useLocaleCurrent();
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
 

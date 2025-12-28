@@ -14,9 +14,7 @@
 }
 
 .cta {
-  background-color: rgba(255, 255, 255, 0.8);
   padding: var(--ft--spacing-size-80) 0;
-  margin-top: var(--ft--spacing-size-40);
   border-top: 1px solid var(--ft-border-color);
 }
 
@@ -24,6 +22,15 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  gap: var(--ft--global-gap);
+}
+
+.cta__title-wrap {
+  max-width: 50%;
+}
+
+.faqs {
+  padding-bottom: var(--ft--spacing-size-80);
 }
 
 .faqs__accordion {
@@ -110,6 +117,10 @@
     flex-direction: column;
     gap: var(--ft--spacing-size-32);
     text-align: center;
+  }
+
+  .cta__title-wrap {
+    max-width: 100%;
   }
 }
 

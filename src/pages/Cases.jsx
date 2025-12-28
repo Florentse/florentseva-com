@@ -1,10 +1,9 @@
-
 import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
 import usePageSections from "../hooks/usePageSections";
-import useCurrentLocale from "../hooks/useCurrentLocale";
-import usePublishedCases from "../hooks/usePublishedCases";
+import useLocaleCurrent from "../hooks/useLocaleCurrent";
+import useCasesPublished from "../hooks/useCasesPublished";
 
 import PageLoader from "../components/common/PageLoader";
 import CardLoader from "../components/common/CardLoader";
@@ -25,12 +24,16 @@ const formatCaseDescription = (text) => {
   return text;
 };
 
-
 const CaseCard = ({ item, btnLabel }) => (
-  <Link
-    to={`/cases/${item.slug}`}
-    className="case-card"
-  >
+  <Link to={`/cases/${item.slug}`} className="case-card">
+    <div className="case-card__tags">
+      {item.serviceNames &&
+        item.serviceNames.map((name, idx) => (
+          <span key={idx} className="case-card__tag">
+            {name}
+          </span>
+        ))}
+    </div>
     <div className="case-card__text-wrap">
       <h3 className="title-small">{item.title}</h3>
       <div
@@ -51,8 +54,8 @@ const CaseCard = ({ item, btnLabel }) => (
 
 export default function Cases() {
   const { sections, loading: pageLoading } = usePageSections("cases");
-  const { cases, services, loading: casesLoading } = usePublishedCases();
-  const { locale } = useCurrentLocale();
+  const { cases, services, loading: casesLoading } = useCasesPublished();
+  const { locale } = useLocaleCurrent();
   const [activeFilter, setActiveFilter] = useState("all");
   const scrollRef = useRef(null);
 
@@ -62,12 +65,18 @@ export default function Cases() {
 
   const handleFilterClick = (id) => {
     setActiveFilter(id);
-    
+
     if (scrollRef.current) {
       // Получаем значение офсета из CSS переменной (превращаем в число)
-      const offset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--scroll-top-offset')) || 0;
-      const elementPosition = scrollRef.current.getBoundingClientRect().top + window.pageYOffset;
-      
+      const offset =
+        parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--scroll-top-offset"
+          )
+        ) || 0;
+      const elementPosition =
+        scrollRef.current.getBoundingClientRect().top + window.pageYOffset;
+
       window.scrollTo({
         top: elementPosition - offset,
         behavior: "smooth",
@@ -76,9 +85,10 @@ export default function Cases() {
   };
 
   // Логика фильтрации кейсов по ID услуг
-  const filteredCases = activeFilter === "all"
-    ? cases
-    : cases.filter(c => c.serviceIds?.includes(activeFilter));
+  const filteredCases =
+    activeFilter === "all"
+      ? cases
+      : cases.filter((c) => c.serviceIds?.includes(activeFilter));
 
   return (
     <>
@@ -103,22 +113,29 @@ export default function Cases() {
             <section key={section.id} className="s-cases-list" ref={scrollRef}>
               <div className="container c-cases-list__container">
                 <div className="c-cases-list__filters-wrap">
-                  <button 
-                    className={`btn-filter ${activeFilter === "all" ? "btn-filter--active" : ""}`}
+                  <button
+                    className={`btn-filter ${
+                      activeFilter === "all" ? "btn-filter--active" : ""
+                    }`}
                     onClick={() => handleFilterClick("all")}
                   >
                     {section.filters?.all_label || "All"}
                   </button>
 
-                  {!casesLoading && services?.map((service) => (
-                    <button
-                      key={service.id}
-                      className={`btn-filter ${activeFilter === service.id ? "btn-filter--active" : ""}`}
-                      onClick={() => handleFilterClick(service.id)}
-                    >
-                      {service.title}
-                    </button>
-                  ))}
+                  {!casesLoading &&
+                    services?.map((service) => (
+                      <button
+                        key={service.id}
+                        className={`btn-filter ${
+                          activeFilter === service.id
+                            ? "btn-filter--active"
+                            : ""
+                        }`}
+                        onClick={() => handleFilterClick(service.id)}
+                      >
+                        {service.title}
+                      </button>
+                    ))}
                 </div>
 
                 <div className="c-cases-list__grid">
@@ -130,11 +147,7 @@ export default function Cases() {
                     </>
                   ) : (
                     filteredCases.map((c) => (
-                      <CaseCard
-                        key={c.id}
-                        item={c}
-                        btnLabel={btnLabel}
-                      />
+                      <CaseCard key={c.id} item={c} btnLabel={btnLabel} />
                     ))
                   )}
                 </div>
@@ -144,7 +157,10 @@ export default function Cases() {
         }
 
         return (
-          <section key={section.id} style={{ border: "1px dashed red", padding: "10px" }}>
+          <section
+            key={section.id}
+            style={{ border: "1px dashed red", padding: "10px" }}
+          >
             <strong>Unknown section key:</strong> {section.key}
           </section>
         );

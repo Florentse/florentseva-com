@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 import usePageSections from "../hooks/usePageSections";
-import useCurrentLocale from "../hooks/useCurrentLocale";
+import useLocaleCurrent from "../hooks/useLocaleCurrent";
 
 import PageLoader from "../components/common/PageLoader";
 

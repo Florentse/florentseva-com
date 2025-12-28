@@ -1,9 +1,11 @@
+//src/hooks/useCasesPublished.js
+
 import { useState, useEffect } from "react";
 import { fetchTable } from "../services/airtable";
-import useCurrentLocale from "./useCurrentLocale";
+import useLocaleCurrent from "./useLocaleCurrent";
 
-export default function usePublishedCases() {
-  const { locale, loading: localeLoading } = useCurrentLocale();
+export default function useCasesPublished() {
+  const { locale, loading: localeLoading } = useLocaleCurrent();
   const [cases, setCases] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +46,11 @@ export default function usePublishedCases() {
           })
           .sort((a, b) => a.order - b.order);
 
+        const serviceMap = translatedServices.reduce((acc, s) => {
+          acc[s.id] = s.title;
+          return acc;
+        }, {});
+
         // 2. Подготовка кейсов
         const published = allCases
           .filter(
@@ -66,9 +73,12 @@ export default function usePublishedCases() {
               title: c.title,
               description: translation ? translation.description : "",
               serviceIds: Array.isArray(c.services) ? c.services : [], // ID связанных услуг из Airtable
+              serviceNames: Array.isArray(c.services)
+                ? c.services.map((id) => serviceMap[id]).filter(Boolean)
+                : [],
             };
           })
-          .sort((a, b) => a.order - b.order);
+          .sort((a, b) => b.order - a.order);
 
         // 1. Собираем ID всех услуг, которые реально привязаны к опубликованным кейсам
         const usedServiceIds = new Set(

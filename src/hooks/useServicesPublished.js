@@ -1,11 +1,11 @@
-// src/hooks/usePublishedServices.js
+// src/hooks/useServicesPublished.js
 
 import { useState, useEffect } from "react";
 import { fetchTable } from "../services/airtable";
-import useCurrentLocale from "./useCurrentLocale";
+import useLocaleCurrent from "./useLocaleCurrent";
 
-export default function usePublishedServices() {
-  const { locale, loading: localeLoading } = useCurrentLocale();
+export default function useServicesPublished() {
+  const { locale, loading: localeLoading } = useLocaleCurrent();
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]); // Состояние для категорий
   const [loading, setLoading] = useState(true);

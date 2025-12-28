@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import useGlobalSections from "./hooks/useGlobalSections";
-import useCurrentLocale from "./hooks/useCurrentLocale";
+import useLocaleCurrent from "./hooks/useLocaleCurrent";
 
 import ScrollToTop from "./components/common/ScrollToTop";
 
@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceTemplate from "./pages/ServiceTemplate";
 import Cases from "./pages/Cases";
+import CaseTemplate from "./pages/CaseTemplate";
 import Products from "./pages/Products";
 import Blog from "./pages/Blog";
 import About from "./pages/About";
@@ -24,7 +25,7 @@ export default function App() {
     "header",
     "footer",
   ]);
-  const { locale, changeLocale } = useCurrentLocale();
+  const { locale, changeLocale } = useLocaleCurrent();
 
   return (
     <BrowserRouter>
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/services/:slug" element={<ServiceTemplate />} />
             <Route path="/cases" element={<Cases />} />
+            <Route path="/cases/:slug" element={<CaseTemplate />} />
             <Route path="/products" element={<Products />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/about" element={<About />} />

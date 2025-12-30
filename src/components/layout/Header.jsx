@@ -32,6 +32,11 @@ export default function Header({ data, currentLocale, onLocaleChange }) {
               <NavLink
                 key={idx}
                 to={item.payload}
+                end={
+                  item.payload === "/" ||
+                  item.payload === "/cases" ||
+                  item.payload === "/services"
+                }
                 className={({ isActive }) =>
                   `header__link ${isActive ? "header__link--active" : ""}`
                 }

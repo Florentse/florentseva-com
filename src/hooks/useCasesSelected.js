@@ -36,7 +36,7 @@ export default function useCasesSelected() {
             description: translation ? translation.description : "", 
           };
         })
-        .sort((a, b) => a.order - b.order);
+        .sort((a, b) => b.order - a.order);
 
       setCases(selected);
       setLoading(false);

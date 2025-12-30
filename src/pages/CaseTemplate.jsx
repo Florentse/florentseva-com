@@ -26,7 +26,7 @@ const formatDescription = (text) => {
 const LABELS = {
   en: {
     home: "Home",
-    cases: "Case studied",
+    cases: "Case studies",
     year: "Year",
     services: "Services",
     site: "Live site",

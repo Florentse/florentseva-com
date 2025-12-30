@@ -12,7 +12,7 @@
   position: fixed;
   left: 50%;
   right: auto;
-  top: var(--ft--spacing-size-120);
+  top: 9rem;
   width: auto;
   height: 35rem;
   z-index: 1000;
@@ -151,6 +151,7 @@
 
 .case-content {
   padding-top: var(--ft--spacing-size-80);
+  padding-bottom: var(--ft--global-padding);
 }
 
 .case-text-blocks {

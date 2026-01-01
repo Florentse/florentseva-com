@@ -1,14 +1,12 @@
-// src/pages/ServiceTemplate.jsx
-
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import useLocaleCurrent from "../hooks/useLocaleCurrent";
 import useServiceSinglePage from "../hooks/useServiceSinglePage";
 
-import PageLoader from "../components/common/PageLoader";
-import CardLoader from "../components/common/CardLoader";
+import ContactForm from "../components/common/ContactForm";
 
+import PageLoader from "../components/common/PageLoader";
 import "./Services.css";
 
 const LABELS = {
@@ -22,6 +20,8 @@ const LABELS = {
       "A range of technical and creative solutions tailored to your specific project goals.",
     processTitle: "Main implementation steps:",
     faqsTitle: "FAQ",
+    formTitle: "Still have questions?",
+    formSubtitle: "Fill out the form to clarify technical details and implementation stages."
   },
   ru: {
     order: "Заказать услугу",
@@ -33,8 +33,12 @@ const LABELS = {
       "Широкий спектр технических и творческих решений, разработанных с учетом конкретных целей вашего проекта.",
     processTitle: "Основные этапы реализации:",
     faqsTitle: "FAQ",
+    formTitle: "Остались вопросы?",
+    formSubtitle: "Заполните форму для уточнения технических деталей и этапов реализации."
   },
 };
+
+// --- Вспомогательные компоненты секций ---
 
 const Hero = ({ data, labels }) => (
   <section className="s-hero">
@@ -67,11 +71,7 @@ const Quote = ({ data }) => (
 
 const formatSolutionsList = (text) => {
   if (!text) return "";
-
-  // 1. Сначала заменяем Markdown-жирный (**текст**) на HTML (<strong>текст</strong>)
   const withBold = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-
-  // 2. Затем формируем список <ul><li>, если есть строки с дефисом
   if (withBold.includes("- ")) {
     const items = withBold
       .split("\n")
@@ -80,31 +80,27 @@ const formatSolutionsList = (text) => {
       .join("");
     return `<ul>${items}</ul>`;
   }
-
   return withBold;
 };
 
-const Solutions = ({ data, labels }) => {
-  return (
-    <section className="s-solutions">
-      <div className="container s-solutions__container">
-        <div className="s-solutions__text-wrap">
-          <h2 className="title-medium">{labels.solutionsTitle}</h2>
-          <p className="body-medium">{labels.solutionsSub}</p>
-        </div>
-
-        <div className="s-solutions__content">
-          <div
-            className="s-solutions__list-wrap"
-            dangerouslySetInnerHTML={{
-              __html: formatSolutionsList(data.content),
-            }}
-          />
-        </div>
+const Solutions = ({ data, labels }) => (
+  <section className="s-solutions">
+    <div className="container s-solutions__container">
+      <div className="s-solutions__text-wrap">
+        <h2 className="title-medium">{labels.solutionsTitle}</h2>
+        <p className="body-medium">{labels.solutionsSub}</p>
       </div>
-    </section>
-  );
-};
+      <div className="s-solutions__content">
+        <div
+          className="s-solutions__list-wrap"
+          dangerouslySetInnerHTML={{
+            __html: formatSolutionsList(data.content),
+          }}
+        />
+      </div>
+    </div>
+  </section>
+);
 
 const Process = ({ data, labels }) => (
   <section className="s-process">
@@ -131,7 +127,6 @@ const Process = ({ data, labels }) => (
 
 const FAQItem = ({ item }) => {
   const [isOpen, setIsOpen] = useState(false);
-
   return (
     <div className={`faqs__dropdown ${isOpen ? "is-open" : ""}`}>
       <button
@@ -147,19 +142,12 @@ const FAQItem = ({ item }) => {
           fill="none"
           viewBox="0 0 24 24"
         >
-          <g clipPath="url(#a)">
-            <path fill="currentColor" d="M0 11h24v2H0v-2Z" />
-            <path
-              fill="currentColor"
-              className="faqs__icon-vertical"
-              d="M11 24V0h2v24h-2Z"
-            />
-          </g>
-          <defs>
-            <clipPath id="a">
-              <path fill="#fff" d="M0 0h24v24H0z" />
-            </clipPath>
-          </defs>
+          <path fill="currentColor" d="M0 11h24v2H0v-2Z" />
+          <path
+            fill="currentColor"
+            className="faqs__icon-vertical"
+            d="M11 24V0h2v24h-2Z"
+          />
         </svg>
       </button>
       <div className="faqs__dropdown-content">
@@ -169,42 +157,35 @@ const FAQItem = ({ item }) => {
   );
 };
 
-const FAQs = ({ data, labels }) => {
-  return (
-    <section className="faqs">
-      <div className="container faqs__container">
-        <div className="faqs__text-wrap">
-          <h2 className="title-medium">{labels.faqsTitle}</h2>
-        </div>
-
-        <div className="faqs__accordion">
-          {data.items?.map((item, index) => (
-            <FAQItem key={index} item={item} />
-          ))}
-        </div>
+const FAQs = ({ data, labels }) => (
+  <section className="faqs">
+    <div className="container faqs__container">
+      <div className="faqs__text-wrap">
+        <h2 className="title-medium">{labels.faqsTitle}</h2>
       </div>
-    </section>
-  );
-};
-
-const Cta = ({ data, labels }) => (
-  <section className="cta">
-    <div className="container cta__container">
-      <div className="cta__title-wrap">
-        <h3>{data.text}</h3>
-      </div>
-      <div className="btn-group">
-        <button className="btn btn-primary">{labels.order}</button>
-        <button className="btn btn-secondary">{labels.brief}</button>
+      <div className="faqs__accordion">
+        {data.items?.map((item, index) => (
+          <FAQItem key={index} item={item} />
+        ))}
       </div>
     </div>
   </section>
 );
 
-// Если ключ в базе не совпал с SECTION_COMPONENTS, увидим эту ошибку
-const DefaultSection = ({ data }) => (
-  <section style={{ border: "1px dashed red", padding: "10px" }}>
-    <strong>Unknown section key:</strong> {data.key}
+
+const CTA = ({ labels }) => (
+  <section className="s-contact-form">
+    <div className="container s-contact-form__container">
+      <div className="s-contact-form__heading">
+        <h2 className="title-medium">{labels.formTitle}</h2>
+        {labels.formSubtitle && (
+          <p className="body-medium s-contact-form__subtitle">
+            {labels.formSubtitle}
+          </p>
+        )}
+      </div>
+      <ContactForm /> 
+    </div>
   </section>
 );
 
@@ -214,23 +195,28 @@ const SECTION_COMPONENTS = {
   "s-solutions": Solutions,
   "s-process": Process,
   faqs: FAQs,
-  cta: Cta,
+  cta: CTA,
 };
 
 export default function ServiceTemplate() {
   const { slug } = useParams();
-  const { locale } = useLocaleCurrent(); // Добавлена эта строка
-  const { sections, loading } = useServiceSinglePage(slug);
+  const { locale } = useLocaleCurrent();
+  const { sections, loading: sectionsLoading } = useServiceSinglePage(slug);
+
 
   const labels = LABELS[locale?.code] || LABELS.en;
 
-  if (loading) return <PageLoader />;
+ if (sectionsLoading) return <PageLoader />;
   if (!sections) return <div>Service not found</div>;
 
-  return (
-    <main>
+
+ return (
+    <>
       {sections.map((section, index) => {
-        const Component = SECTION_COMPONENTS[section.key] || DefaultSection;
+        const Component = SECTION_COMPONENTS[section.key];
+        if (!Component)
+          return <div key={index}>Unknown key: {section.key}</div>;
+
         return (
           <Component
             key={`${section.key}-${index}`}
@@ -239,6 +225,6 @@ export default function ServiceTemplate() {
           />
         );
       })}
-    </main>
+    </>
   );
 }

@@ -1,38 +1,36 @@
-//src/services/airtable.js
+// src/services/airtable.js
 
-const AIRTABLE_BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
-const AIRTABLE_TOKEN = import.meta.env.VITE_AIRTABLE_TOKEN;
-
-if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN) {
-  console.error("Airtable env vars are missing");
-}
-
-/**
- * Универсальный fetch любой таблицы Airtable с поддержкой пагинации и параметров
- * @param {string} tableName — Имя таблицы
- * @param {object} options — Фильтры (filterByFormula), сортировка и др.
- */
 export async function fetchTable(tableName, options = {}) {
+  const isDev = import.meta.env.DEV; // Vite автоматически определяет режим
   let allRecords = [];
   let offset = "";
-  const baseUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}`;
 
   do {
-    const urlParams = new URLSearchParams(options);
-    if (offset) urlParams.set("offset", offset);
+    let url;
+    let fetchOptions = {};
 
-    const res = await fetch(`${baseUrl}?${urlParams.toString()}`, {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(await res.text());
+    if (isDev) {
+      // Локально: идем напрямую в Airtable
+      const query = new URLSearchParams(options);
+      if (offset) query.set("offset", offset);
+      url = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${tableName}?${query.toString()}`;
+      fetchOptions = {
+        headers: { Authorization: `Bearer ${import.meta.env.VITE_AIRTABLE_TOKEN}` }
+      };
+    } else {
+      // В облаке: идем через наш защищенный API-прокси
+      const query = new URLSearchParams({ tableName, ...options });
+      if (offset) query.set("offset", offset);
+      url = `/api/get-table?${query.toString()}`;
     }
 
+    const res = await fetch(url, fetchOptions);
+    if (!res.ok) throw new Error(`Ошибка API: ${await res.text()}`);
+
     const data = await res.json();
-    const formatted = data.records.map((record) => ({
+    const records = data.records || [];
+
+    const formatted = records.map((record) => ({
       recordId: record.id,
       ...record.fields,
     }));

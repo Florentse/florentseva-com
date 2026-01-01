@@ -71,6 +71,10 @@ html {
   font-size: calc(100vw / 1440 * var(--base-font-size));
 }
 
+.grecaptcha-badge { 
+  visibility: hidden; 
+}
+
 /* Мобильная логика: точка опоры 390px */
 @media (max-width: 479px) {
   html {

@@ -1,6 +1,8 @@
 .footer {
   padding: 1.25rem 0;
   border-top: 1px solid var(--ft-border-color);
+  background-color: var(--ft-text-color);
+  color: var(--ft-bg-color);
 }
 
 .footer__container {

@@ -1,6 +1,7 @@
 :root {
   /* Базовая сетка (px / 16) */
   --ft--spacing-size-8: 0.5rem;
+  --ft--spacing-size-12: 0.75rem;
   --ft--spacing-size-16: 1rem;
   --ft--spacing-size-20: 1.25rem;
   --ft--spacing-size-24: 1.5rem;
@@ -37,7 +38,7 @@
     --ft--spacing-size-96: 6rem;
     --ft--spacing-size-120: 7.5rem;
 
-    --scroll-top-offset: 32px ;
+    --scroll-top-offset: 32px;
   }
 }
 

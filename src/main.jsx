@@ -11,6 +11,7 @@ import "./styles/colors.css";
 import "./styles/spacing.css";
 import "./styles/typography.css";
 import "./styles/buttons.css";
+import "./styles/form.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

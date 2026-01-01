@@ -1,17 +1,15 @@
-// api/submit-form.js
 import nodemailer from "nodemailer";
 
 export default async function handler(req, res) {
+  // 1. Ограничение метода
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // 1. Получаем данные (теперь service в ед. числе, как на фронте)
+  // 2. Получение данных из payload
   const { name, email, service, locale, message, captchaToken } = req.body;
   const service_id = service?.[0];
   const locale_id = locale?.[0];
-
-  console.log(">>> [API Start] Данные получены:", { name, email, service_id, locale_id });
 
   const {
     AIRTABLE_API_KEY,
@@ -23,54 +21,59 @@ export default async function handler(req, res) {
     SMTP_PASSWORD,
   } = process.env;
 
+  console.log(">>> [API Start] Получен запрос от:", email);
+
   try {
-    // 2. Проверка reCAPTCHA
-    console.log(">>> [Auth] Проверка reCAPTCHA...");
+    // 3. Проверка reCAPTCHA
     const captchaVerify = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${captchaToken}`,
       { method: "POST" }
     );
     const captchaData = await captchaVerify.json();
-    console.log(">>> [Auth] Результат капчи:", captchaData.success, "Score:", captchaData.score);
 
     if (!captchaData.success || captchaData.score < 0.5) {
+      console.error(">>> [Auth Error] Капча не пройдена");
       return res.status(403).json({ message: "Security check failed" });
     }
 
-    // 3. Поиск или создание контакта
+    // 4. Поиск или создание контакта в Airtable
     const searchUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts?filterByFormula=({email}='${email}')`;
     const searchRes = await fetch(searchUrl, {
       headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
     });
     const searchData = await searchRes.json();
 
-    let contactRecordId;
-    if (searchData.records?.length > 0) {
-      contactRecordId = searchData.records[0].id;
-      console.log(">>> [Airtable] Контакт найден:", contactRecordId);
-    } else {
+    let contactRecordId = searchData.records?.[0]?.id;
+
+    if (!contactRecordId) {
       console.log(">>> [Airtable] Создаем новый контакт...");
-      const createContactRes = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts`, {
+      const createRes = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          fields: { email, name, locale: locale_id ? [locale_id] : [] }
+          fields: { name, email, locale: locale_id ? [locale_id] : [] },
         }),
       });
-      const newContact = await createContactRes.json();
+      const newContact = await createRes.json();
       contactRecordId = newContact.id;
-      console.log(">>> [Airtable] Контакт создан:", contactRecordId);
     }
 
-    // 4. Создание Lead
-    console.log(">>> [Airtable] Создаем Lead...");
-    const leadResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Leads`, {
+    // 5. Создание Lead в Airtable
+    const leadRes = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Leads`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         fields: {
-          name, email, message,
-          service: service_id ? [service_id] : [], // Поле в Leads (ед. число)
+          name,
+          email,
+          message,
+          service: service_id ? [service_id] : [],
           locale: locale_id ? [locale_id] : [],
           status: "New",
           date: new Date().toISOString(),
@@ -79,36 +82,43 @@ export default async function handler(req, res) {
       }),
     });
 
-    if (!leadResponse.ok) {
-      const errorText = await leadResponse.text();
-      console.error(">>> [Airtable Error] Ошибка Leads:", errorText);
-      throw new Error("Failed to save lead");
+    if (!leadRes.ok) {
+      const errorText = await leadRes.text();
+      throw new Error(`Airtable Lead Error: ${errorText}`);
     }
     console.log(">>> [Airtable] Lead успешно создан");
 
-    // 5. Поиск шаблона и названия услуги
-    console.log(">>> [Airtable Raw] Ответ по шаблонам:", JSON.stringify(templateData));
-    console.log(">>> [Airtable Raw] Ответ по переводам:", JSON.stringify(serviceTransData));
+    // 6. Поиск шаблона письма и перевода услуги
+    const templateFormula = `SEARCH('${locale_id}', {locale})`;
+    const transFormula = `AND(SEARCH('${service_id}', {services}), SEARCH('${locale_id}', {locale}))`;
 
-    if (templateData.records && templateData.records.length > 0) {
-      const template = templateData.records[0].fields;
-      const serviceTitle = serviceTransData.records?.[0]?.fields?.title || "selected service";
-      
-      console.log(">>> [Mail] Шаблон найден, тема письма:", template.subject);
-      console.log(">>> [Mail] Начинаем отправку письма...");
+    const [tRes, sRes] = await Promise.all([
+      fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(templateFormula)}`, {
+        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+      }),
+      fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Service%20Translations?filterByFormula=${encodeURIComponent(transFormula)}`, {
+        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+      }),
+    ]);
+
+    const tData = await tRes.json();
+    const sData = await sRes.json();
+
+    console.log(">>> [Airtable] Шаблонов найдено:", tData.records?.length || 0);
+
+    // 7. Отправка письма, если шаблон найден
+    if (tData.records && tData.records.length > 0) {
+      const template = tData.records[0].fields;
+      const serviceTitle = sData.records?.[0]?.fields?.title || "selected service";
 
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
-        port: SMTP_PORT,
+        port: Number(SMTP_PORT),
         secure: true,
         auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
       });
 
-      // Проверка связи с почтовым сервером
-      await transporter.verify();
-      console.log(">>> [Mail] SMTP сервер готов");
-
-      const info = await transporter.sendMail({
+      await transporter.sendMail({
         from: `"Tatiana Florentseva" <${SMTP_USER}>`,
         to: email,
         subject: template.subject,
@@ -119,15 +129,14 @@ export default async function handler(req, res) {
           </div>
         `,
       });
-
-      console.log(">>> [Mail Success] Письмо отправлено! ID:", info.messageId);
-    } else {
-      console.warn(">>> [Mail Skip] Шаблон не найден. Письмо не будет отправлено.");
+      console.log(">>> [Mail Success] Письмо отправлено на", email);
     }
 
+    // 8. Финальный ответ
     return res.status(200).json({ success: true });
+
   } catch (error) {
     console.error(">>> [Fatal Error]:", error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 }

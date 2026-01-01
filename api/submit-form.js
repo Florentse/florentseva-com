@@ -47,40 +47,46 @@ export default async function handler(req, res) {
 
     if (!contactRecordId) {
       console.log(">>> [Airtable] Создаем новый контакт...");
-      const createRes = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts`, {
+      const createRes = await fetch(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fields: { name, email, locale: locale_id ? [locale_id] : [] },
+          }),
+        }
+      );
+      const newContact = await createRes.json();
+      contactRecordId = newContact.id;
+    }
+
+    // 5. Создание Lead в Airtable
+    const leadRes = await fetch(
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Leads`,
+      {
         method: "POST",
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fields: { name, email, locale: locale_id ? [locale_id] : [] },
+          fields: {
+            name,
+            email,
+            message,
+            service: service_id ? [service_id] : [],
+            locale: locale_id ? [locale_id] : [],
+            status: "New",
+            date: new Date().toISOString(),
+            contact: [contactRecordId],
+          },
         }),
-      });
-      const newContact = await createRes.json();
-      contactRecordId = newContact.id;
-    }
-
-    // 5. Создание Lead в Airtable
-    const leadRes = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Leads`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fields: {
-          name,
-          email,
-          message,
-          service: service_id ? [service_id] : [],
-          locale: locale_id ? [locale_id] : [],
-          status: "New",
-          date: new Date().toISOString(),
-          contact: [contactRecordId],
-        },
-      }),
-    });
+      }
+    );
 
     if (!leadRes.ok) {
       const errorText = await leadRes.text();
@@ -88,28 +94,50 @@ export default async function handler(req, res) {
     }
     console.log(">>> [Airtable] Lead успешно создан");
 
-    // 6. Поиск шаблона письма и перевода услуги
-    const templateFormula = `SEARCH('${locale_id}', {locale})`;
-    const transFormula = `AND(SEARCH('${service_id}', {services}), SEARCH('${locale_id}', {locale}))`;
+    // 6. Поиск шаблона письма и перевода услуги (используем новые Lookup-поля)
+    const templateFormula = `({locale_id_hidden}='${locale_id}')`;
+    const transFormula = `AND({service_id_hidden}='${service_id}', {locale_id_hidden}='${locale_id}')`;
+
+    console.log(">>> [Airtable] Новая формула шаблона:", templateFormula);
+    console.log(">>> [Airtable] Новая формула перевода:", transFormula);
 
     const [tRes, sRes] = await Promise.all([
-      fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(templateFormula)}`, {
-        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
-      }),
-      fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Service%20Translations?filterByFormula=${encodeURIComponent(transFormula)}`, {
-        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
-      }),
+      fetch(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(
+          templateFormula
+        )}`,
+        {
+          headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+        }
+      ),
+      fetch(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Service%20Translations?filterByFormula=${encodeURIComponent(
+          transFormula
+        )}`,
+        {
+          headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+        }
+      ),
     ]);
 
     const tData = await tRes.json();
     const sData = await sRes.json();
 
-    console.log(">>> [Airtable] Шаблонов найдено:", tData.records?.length || 0);
+    // Эти логи теперь должны показать наличие записей
+    console.log(
+      ">>> [Airtable Raw] Шаблонов найдено:",
+      tData.records?.length || 0
+    );
+    console.log(
+      ">>> [Airtable Raw] Переводов найдено:",
+      sData.records?.length || 0
+    );
 
     // 7. Отправка письма, если шаблон найден
     if (tData.records && tData.records.length > 0) {
       const template = tData.records[0].fields;
-      const serviceTitle = sData.records?.[0]?.fields?.title || "selected service";
+      const serviceTitle =
+        sData.records?.[0]?.fields?.title || "selected service";
 
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
@@ -134,7 +162,6 @@ export default async function handler(req, res) {
 
     // 8. Финальный ответ
     return res.status(200).json({ success: true });
-
   } catch (error) {
     console.error(">>> [Fatal Error]:", error.message);
     return res.status(500).json({ success: false, message: error.message });

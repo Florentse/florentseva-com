@@ -6,8 +6,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { name, email, service_id, locale_id, message, captchaToken } =
-    req.body;
+  const { name, email, service_id, locale_id, message, captchaToken } = req.body;
 
   const {
     AIRTABLE_API_KEY,
@@ -32,8 +31,7 @@ export default async function handler(req, res) {
     }
 
     // 2. Поиск или создание контакта в таблице "Contacts"
-    // Ищем по Email через фильтр Airtable
-    const searchUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts?filterByFormula=({Email}='${email}')`;
+    const searchUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts?filterByFormula=({email}='${email}')`;
     const searchRes = await fetch(searchUrl, {
       headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
     });
@@ -42,10 +40,8 @@ export default async function handler(req, res) {
     let contactRecordId;
 
     if (searchData.records && searchData.records.length > 0) {
-      // Контакт найден, берем его ID
       contactRecordId = searchData.records[0].id;
     } else {
-      // Контакт не найден, создаем новый
       const createContactRes = await fetch(
         `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts`,
         {
@@ -56,10 +52,9 @@ export default async function handler(req, res) {
           },
           body: JSON.stringify({
             fields: {
-              Email: email,
-              Name: name,
-              Locale: locale_id ? [locale_id] : [],
-              Type: "Lead",
+              email: email,
+              name: name,
+              locale: locale_id ? [locale_id] : [],
             },
           }),
         }
@@ -68,8 +63,8 @@ export default async function handler(req, res) {
       contactRecordId = newContact.id;
     }
 
-    // 3. Создание заявки в таблице "Leads" с привязкой к контакту
-    const response = await fetch(
+    // 3. Создание заявки в таблице "Leads"
+    const leadResponse = await fetch(
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Leads`,
       {
         method: "POST",
@@ -79,78 +74,67 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           fields: {
-            Name: name,
-            Email: email,
-            Service: service_id ? [service_id] : [],
-            Locale: locale_id ? [locale_id] : [],
-            Message: message,
-            Status: "New",
-            Date: new Date().toISOString(),
-            Contact: [contactRecordId],
+            name: name,
+            email: email,
+            service: service_id ? [service_id] : [], // Поле в единственном числе
+            locale: locale_id ? [locale_id] : [],
+            message: message,
+            status: "New",
+            date: new Date().toISOString(),
+            contact: [contactRecordId],
           },
         }),
       }
     );
 
-    if (!response.ok) throw new Error("Failed to save lead");
+    if (!leadResponse.ok) throw new Error("Failed to save lead to Airtable");
 
-    // 4. Получение шаблона письма и перевода услуги
+    // 4. Получение шаблона письма и названия услуги
     const [templateRes, serviceTransRes] = await Promise.all([
       fetch(
-        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=({Locale_ID_Text}='${locale_id}')`,
-        {
-          headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
-        }
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=({locale}='${locale_id}')`,
+        { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } }
       ),
       fetch(
-        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Service%20Translations?filterByFormula=({Search_Key}='${service_id}-${locale_id}')`,
-        {
-          headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
-        }
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Service%20Translations?filterByFormula=AND({services}='${service_id}', {locale}='${locale_id}')`,
+        { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } }
       ),
     ]);
 
     const templateData = await templateRes.json();
     const serviceTransData = await serviceTransRes.json();
 
-    if (
-      templateData.records?.length > 0 &&
-      serviceTransData.records?.length > 0
-    ) {
+    if (templateData.records?.length > 0) {
       const template = templateData.records[0].fields;
-      const serviceTitle = serviceTransData.records[0].fields.title;
+      const serviceTitle = serviceTransData.records?.[0]?.fields?.title || "selected service";
 
-      // Сборка текста письма
-      const emailHtml = `
-        <p>${template.Greeting} ${name}!</p>
-        <p>${template["Topic Intro"]} <strong>${serviceTitle}</strong> ${
-        template["Message Body"]
-      }</p>
-        <hr />
-        <p style="color: #666;">${template.Footer || ""}</p>
-      `;
-
-      // 5. Отправка через Beget SMTP
+      // 5. Отправка через SMTP (contact@florentseva.com)
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: true, // true для порта 465
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: true,
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
+          user: SMTP_USER,
+          pass: SMTP_PASSWORD,
         },
       });
 
       await transporter.sendMail({
-        from: `"Tatiana Florentseva" <${process.env.SMTP_USER}>`,
+        from: `"Tatiana Florentseva" <${SMTP_USER}>`,
         to: email,
-        subject: template.Subject,
-        html: emailHtml,
+        subject: template.subject,
+        html: `
+          <div style="font-family: sans-serif; color: #333;">
+            <p>${template.greeting} ${name}!</p>
+            <p>${template.topic_intro} <strong>${serviceTitle}</strong>. ${template.message_body}</p>
+          </div>
+        `,
       });
     }
 
     return res.status(200).json({ success: true });
   } catch (error) {
+    console.error("API Error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 }

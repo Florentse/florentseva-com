@@ -129,8 +129,8 @@ export default function ContactForm() {
         const payload = {
           name: formData.name,
           email: formData.email,
-          service_id: selectedService,
-          locale_id: locale?.recordId,
+          services: selectedService ? [selectedService] : [],
+          locale: locale?.recordId ? [locale.recordId] : [],
           message: formData.message,
           captchaToken: token,
         };
@@ -147,9 +147,11 @@ export default function ContactForm() {
             "Content-Type": "application/json",
           };
 
-          // 1. Сначала ищем/создаем контакт (локальная копия логики сервера)
+          console.log(">>> [Локальный тест] Начинаем процесс...");
+
+          // 1. Поиск/создание контакта
           const searchRes = await fetch(
-            `${AIRTABLE_URL}/Contacts?filterByFormula=({Email}='${formData.email}')`,
+            `${AIRTABLE_URL}/Contacts?filterByFormula=({email}='${formData.email}')`,
             { headers }
           );
           const searchData = await searchRes.json();
@@ -157,39 +159,63 @@ export default function ContactForm() {
 
           if (searchData.records?.length > 0) {
             contactId = searchData.records[0].id;
+            console.log(">>> Контакт найден:", contactId);
           } else {
-            const newContact = await fetch(`${AIRTABLE_URL}/Contacts`, {
+            console.log(">>> Контакт не найден, создаем...");
+            const newContactRes = await fetch(`${AIRTABLE_URL}/Contacts`, {
               method: "POST",
               headers,
               body: JSON.stringify({
                 fields: {
-                  Email: formData.email,
-                  Name: formData.name,
-                  Locale: locale?.recordId ? [locale.recordId] : [],
-                  Type: "Lead",
+                  email: formData.email,
+                  name: formData.name,
+                  locale: locale?.recordId ? [locale.recordId] : [],
                 },
               }),
-            }).then((r) => r.json());
+            });
+            const newContact = await newContactRes.json();
+            if (!newContactRes.ok) {
+              console.error(">>> Ошибка при создании Контакта:", newContact);
+              throw new Error("Airtable Contact Error");
+            }
             contactId = newContact.id;
+            console.log(">>> Контакт создан:", contactId);
           }
 
-          // 2. Теперь создаем Lead с привязкой
+          // 2. Создание Lead
+          const leadData = {
+            fields: {
+              name: formData.name,
+              email: formData.email,
+              service: selectedService ? [selectedService] : [],
+              locale: locale?.recordId ? [locale.recordId] : [],
+              message: formData.message,
+              status: "New",
+              date: new Date().toISOString(),
+              contact: [contactId],
+            },
+          };
+
+          console.log(">>> Отправляем Lead в Airtable:", leadData);
+
           response = await fetch(`${AIRTABLE_URL}/Leads`, {
             method: "POST",
             headers,
-            body: JSON.stringify({
-              fields: {
-                Name: formData.name,
-                Email: formData.email,
-                Service: selectedService ? [selectedService] : [],
-                Locale: locale?.recordId ? [locale.recordId] : [],
-                Message: formData.message,
-                Status: "New",
-                Date: new Date().toISOString(),
-                Contact: [contactId], // Связываем с контактом
-              },
-            }),
+            body: JSON.stringify(leadData),
           });
+
+          if (!response.ok) {
+            const errorDetails = await response.json();
+            // Выводим конкретную причину ошибки текстом
+            console.error(
+              ">>> ПРИЧИНА ОШИБКИ 422:",
+              errorDetails.error?.message
+            );
+            console.error(">>> ТИП ОШИБКИ:", errorDetails.error?.type);
+            throw new Error(errorDetails.error?.message || "Ошибка сервера");
+          }
+
+          console.log(">>> Успех! Lead создан.");
         } else {
           // В продакшене через защищенный API
           response = await fetch("/api/submit-form", {

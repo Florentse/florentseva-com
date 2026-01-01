@@ -6,7 +6,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { name, email, service_id, locale_id, message, captchaToken } = req.body;
+  const { name, email, services, locale, message, captchaToken } = req.body;
+
+  const service_id = services?.[0];
+  const locale_id = locale?.[0];
 
   const {
     AIRTABLE_API_KEY,
@@ -106,7 +109,8 @@ export default async function handler(req, res) {
 
     if (templateData.records?.length > 0) {
       const template = templateData.records[0].fields;
-      const serviceTitle = serviceTransData.records?.[0]?.fields?.title || "selected service";
+      const serviceTitle =
+        serviceTransData.records?.[0]?.fields?.title || "selected service";
 
       // 5. Отправка через SMTP (contact@florentseva.com)
       const transporter = nodemailer.createTransport({

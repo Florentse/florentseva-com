@@ -129,11 +129,16 @@ export default function ContactForm() {
         const payload = {
           name: formData.name,
           email: formData.email,
-          services: selectedService ? [selectedService] : [],
+          service: selectedService ? [selectedService] : [], // Исправлено: теперь service
           locale: locale?.recordId ? [locale.recordId] : [],
           message: formData.message,
           captchaToken: token,
         };
+
+        console.log(
+          ">>> [Frontend] Сформированный payload (теперь service):",
+          payload
+        );
 
         const isDev = import.meta.env.DEV;
         let response;

@@ -87,28 +87,14 @@ export default async function handler(req, res) {
     console.log(">>> [Airtable] Lead успешно создан");
 
     // 5. Поиск шаблона и названия услуги
-    // ВАЖНО: в Service Translations поле называется 'services' (мн. число)
-    const templateFormula = `({locale}='${locale_id}')`;
-    const transFormula = `AND({services}='${service_id}', {locale}='${locale_id}')`;
+    console.log(">>> [Airtable Raw] Ответ по шаблонам:", JSON.stringify(templateData));
+    console.log(">>> [Airtable Raw] Ответ по переводам:", JSON.stringify(serviceTransData));
 
-    console.log(">>> [Airtable] Поиск шаблона...");
-    const [templateRes, serviceTransRes] = await Promise.all([
-      fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(templateFormula)}`,
-        { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } }),
-      fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Service%20Translations?filterByFormula=${encodeURIComponent(transFormula)}`,
-        { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } }),
-    ]);
-
-    const templateData = await templateRes.json();
-    const serviceTransData = await serviceTransRes.json();
-
-    console.log(">>> [Airtable] Найдено шаблонов:", templateData.records?.length || 0);
-    console.log(">>> [Airtable] Найдено переводов услуги:", serviceTransData.records?.length || 0);
-
-    if (templateData.records?.length > 0) {
+    if (templateData.records && templateData.records.length > 0) {
       const template = templateData.records[0].fields;
       const serviceTitle = serviceTransData.records?.[0]?.fields?.title || "selected service";
-
+      
+      console.log(">>> [Mail] Шаблон найден, тема письма:", template.subject);
       console.log(">>> [Mail] Начинаем отправку письма...");
 
       const transporter = nodemailer.createTransport({

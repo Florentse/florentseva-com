@@ -139,30 +139,57 @@ export default function ContactForm() {
         let response;
 
         if (isDev) {
-          // Локально: прямая запись в Airtable для тестов
-          response = await fetch(
-            `https://api.airtable.com/v0/${
-              import.meta.env.VITE_AIRTABLE_BASE_ID
-            }/Leads`,
-            {
+          const AIRTABLE_URL = `https://api.airtable.com/v0/${
+            import.meta.env.VITE_AIRTABLE_BASE_ID
+          }`;
+          const headers = {
+            Authorization: `Bearer ${import.meta.env.VITE_AIRTABLE_TOKEN}`,
+            "Content-Type": "application/json",
+          };
+
+          // 1. Сначала ищем/создаем контакт (локальная копия логики сервера)
+          const searchRes = await fetch(
+            `${AIRTABLE_URL}/Contacts?filterByFormula=({Email}='${formData.email}')`,
+            { headers }
+          );
+          const searchData = await searchRes.json();
+          let contactId;
+
+          if (searchData.records?.length > 0) {
+            contactId = searchData.records[0].id;
+          } else {
+            const newContact = await fetch(`${AIRTABLE_URL}/Contacts`, {
               method: "POST",
-              headers: {
-                Authorization: `Bearer ${import.meta.env.VITE_AIRTABLE_TOKEN}`,
-                "Content-Type": "application/json",
-              },
+              headers,
               body: JSON.stringify({
                 fields: {
-                  Name: payload.name,
-                  Email: payload.email,
-                  Service: payload.service_id ? [payload.service_id] : [],
-                  Locale: payload.locale_id ? [payload.locale_id] : [],
-                  Message: payload.message,
-                  Status: "New",
-                  Date: new Date().toISOString(),
+                  Email: formData.email,
+                  Name: formData.name,
+                  Locale: locale?.recordId ? [locale.recordId] : [],
+                  Type: "Lead",
                 },
               }),
-            }
-          );
+            }).then((r) => r.json());
+            contactId = newContact.id;
+          }
+
+          // 2. Теперь создаем Lead с привязкой
+          response = await fetch(`${AIRTABLE_URL}/Leads`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              fields: {
+                Name: formData.name,
+                Email: formData.email,
+                Service: selectedService ? [selectedService] : [],
+                Locale: locale?.recordId ? [locale.recordId] : [],
+                Message: formData.message,
+                Status: "New",
+                Date: new Date().toISOString(),
+                Contact: [contactId], // Связываем с контактом
+              },
+            }),
+          });
         } else {
           // В продакшене через защищенный API
           response = await fetch("/api/submit-form", {

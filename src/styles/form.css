@@ -150,6 +150,6 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: var(--ft--global-gap);
+  gap: var(--ft--spacing-size-32);
   align-items: flex-start;
 }

@@ -107,6 +107,9 @@
   flex-direction: column;
   align-items: center;
   gap: var(--ft--spacing-size-32);
+  @media (max-width: 768px) {
+    align-items: flex-start;
+  }
 }
 
 .h-cases__grid {
@@ -125,7 +128,13 @@
 
 .h-process__heading-wrap {
   padding-right: 12rem;
-  max-width: 40rem;
+  max-width: 42rem;
+  @media (max-width: 768px) {
+    padding-right: 0;
+    max-width: 20rem;
+    margin-right: auto;
+    margin-left: 0;
+  }
 }
 
 .h-process__list {

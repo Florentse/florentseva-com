@@ -4,6 +4,13 @@ import useServicesPublished from "../hooks/useServicesPublished";
 import ContactForm from "../components/common/ContactForm";
 import PageLoader from "../components/common/PageLoader";
 
+import emailIcon from "../assets/icons/email.svg";
+import telegramIcon from "../assets/icons/telegram.svg";
+import bookingIcon from "../assets/icons/booking.svg";
+
+import iconCopy from "../assets/icons/copy.svg";
+import iconCopyCheck from "../assets/icons/copy-check.svg";
+
 import "./Contact.css";
 
 const CONTACT_LABELS = {
@@ -56,11 +63,7 @@ export default function Contact() {
 
             <div className="contact-info">
               <div className="contact-info__item">
-                <img
-                  src="src/assets/icons/email.svg"
-                  alt="Email"
-                  className="contact-info__item-icon"
-                />
+                <img src={emailIcon} alt="Email" className="contact-info__item-icon" />
                 <a
                   href={`mailto:${labels.email}`}
                   className="body-small font-weight-medium"
@@ -74,12 +77,12 @@ export default function Contact() {
                   onClick={() => handleCopy(labels.email, "email")}
                 >
                   <img
-                    src="src/assets/icons/copy.svg"
+                    src={iconCopy}
                     alt=""
                     className="icon-default"
                   />
                   <img
-                    src="src/assets/icons/copy-check.svg"
+                    src={iconCopyCheck}
                     alt=""
                     className="icon-success"
                   />
@@ -87,11 +90,7 @@ export default function Contact() {
               </div>
 
               <div className="contact-info__item">
-                <img
-                  src="src/assets/icons/telegram.svg"
-                  alt="Telegram"
-                  className="contact-info__item-icon"
-                />
+                <img src={telegramIcon} alt="Telegram" className="contact-info__item-icon" />
                 <a
                   href={`https://t.me/${labels.telegram.replace("@", "")}`}
                   className="body-small font-weight-medium"
@@ -106,13 +105,13 @@ export default function Contact() {
                   }`}
                   onClick={() => handleCopy(labels.telegram, "tg")}
                 >
-                  <img
-                    src="src/assets/icons/copy.svg"
+                 <img
+                    src={iconCopy}
                     alt=""
                     className="icon-default"
                   />
                   <img
-                    src="src/assets/icons/copy-check.svg"
+                    src={iconCopyCheck}
                     alt=""
                     className="icon-success"
                   />
@@ -120,11 +119,7 @@ export default function Contact() {
               </div>
 
               <div className="contact-info__item">
-                <img
-                  src="src/assets/icons/booking.svg"
-                  alt="Booking"
-                  className="contact-info__item-icon"
-                />
+                <img src={bookingIcon} alt="Booking" className="contact-info__item-icon" />
                 <a
                   href="#"
                   className="body-small font-weight-medium"

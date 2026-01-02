@@ -31,12 +31,12 @@
     --ft--spacing-size-24: 1.25rem;
     --ft--spacing-size-28: 1.5rem;
     --ft--spacing-size-32: 1.75rem;
-    --ft--spacing-size-40: 2.25rem;
-    --ft--spacing-size-48: 2.5rem;
-    --ft--spacing-size-64: 3rem;
-    --ft--spacing-size-80: 4rem;
-    --ft--spacing-size-96: 6rem;
-    --ft--spacing-size-120: 7.5rem;
+    --ft--spacing-size-40: 1.85rem;
+    --ft--spacing-size-48: 2rem;
+    --ft--spacing-size-64: 2.5rem;
+    --ft--spacing-size-80: 3rem;
+    --ft--spacing-size-96: 4rem;
+    --ft--spacing-size-120: 5rem;
 
     --scroll-top-offset: 32px;
   }

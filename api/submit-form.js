@@ -149,16 +149,29 @@ export default async function handler(req, res) {
         to: email,
         subject: template.subject,
         html: `
-          <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px;">
             <p>${template.greeting} ${name}!</p>
             <br/>
+            <p>
+              ${template.topic_intro} <strong>${serviceTitle}</strong>.
+              <br/><br/>
+              ${
+                template.message_body
+                  ? template.message_body.replace(/\n/g, "<br/>")
+                  : ""
+              }
+            </p>
             <br/>
-            <p>${template.topic_intro} <strong>${serviceTitle}</strong>. ${
-          template.message_body
-        }</p>
-            <br/>
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #777;">
-              ${template.footer ? template.footer.replace(/\n/g, "<br/>") : ""}
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <div style="font-size: 12px; color: #777; margin-bottom: 10px;">
+                ${
+                  template.footer ? template.footer.replace(/\n/g, "<br/>") : ""
+                }
+              </div>
+              <a href="https://florentseva.com" 
+                 style="font-size: 13px; color: #000; text-decoration: none; font-weight: 600; border-bottom: 1px solid #000; padding-bottom: 2px;">
+                florentseva.com
+              </a>
             </div>
           </div>
         `,

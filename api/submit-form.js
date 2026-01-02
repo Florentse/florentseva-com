@@ -151,11 +151,8 @@ export default async function handler(req, res) {
         html: `
           <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px;">
             <p>${template.greeting} ${name}!</p>
-            <br/>
             <p>
-              ${template.topic_intro} <strong>${serviceTitle}</strong>.
-              <br/><br/>
-              ${
+              ${template.topic_intro} <strong>${serviceTitle}</strong> ${
                 template.message_body
                   ? template.message_body.replace(/\n/g, "<br/>")
                   : ""

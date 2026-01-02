@@ -33,8 +33,18 @@ export default async function handler(req, res) {
       return res.status(403).json({ message: "Security check failed" });
     }
 
+    if (!email || !email.includes("@") || name.length > 100) {
+      return res.status(400).json({ message: "Invalid input data" });
+    }
+
+    // Очистка данных от лишних пробелов (санитизация)
+    const cleanName = name.trim();
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanMessage = message ? message.slice(0, 5000) : "";
+
     // 4. Поиск или обновление контакта в Airtable
-    const searchUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts?filterByFormula=({email}='${email}')`;
+    const escapedEmail = cleanEmail.replace(/'/g, "\\'"); // Защита от инъекций в формулу
+    const searchUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts?filterByFormula=({email}='${escapedEmail}')`;
     const searchRes = await fetch(searchUrl, {
       headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
     });
@@ -43,7 +53,6 @@ export default async function handler(req, res) {
     let contactRecordId = searchData.records?.[0]?.id;
 
     if (contactRecordId) {
-      // Если контакт найден — обновляем его имя и локаль
       await fetch(
         `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts/${contactRecordId}`,
         {
@@ -53,12 +62,11 @@ export default async function handler(req, res) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            fields: { name, locale: locale_id ? [locale_id] : [] },
+            fields: { name: cleanName, locale: locale_id ? [locale_id] : [] },
           }),
         }
       );
     } else {
-      // Если контакта нет — создаем новый
       const createRes = await fetch(
         `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts`,
         {
@@ -68,7 +76,11 @@ export default async function handler(req, res) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            fields: { name, email, locale: locale_id ? [locale_id] : [] },
+            fields: {
+              name: cleanName,
+              email: cleanEmail,
+              locale: locale_id ? [locale_id] : [],
+            },
           }),
         }
       );
@@ -87,9 +99,9 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           fields: {
-            name,
-            email,
-            message,
+            name: cleanName,
+            email: cleanEmail,
+            message: cleanMessage,
             service: service_id ? [service_id] : [],
             locale: locale_id ? [locale_id] : [],
             status: "New",
@@ -149,14 +161,14 @@ export default async function handler(req, res) {
         to: email,
         subject: template.subject,
         html: `
-          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px;">
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
             <p>${template.greeting} ${name}!</p>
             <p>
               ${template.topic_intro} <strong>${serviceTitle}</strong> ${
-                template.message_body
-                  ? template.message_body.replace(/\n/g, "<br/>")
-                  : ""
-              }
+          template.message_body
+            ? template.message_body.replace(/\n/g, "<br/>")
+            : ""
+        }
             </p>
             <br/>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">

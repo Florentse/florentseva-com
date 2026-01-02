@@ -1,37 +1,92 @@
 .btn-group {
-    display: flex;
-    gap: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 
-button, .btn {
-    font-size: 1.15rem;
-    font-weight: 500;
-    padding: 0.75rem 1.5rem;
-    border-radius: 3rem;
-    border: 1px solid var(--ft-text-color);
-    color: var(--ft-text-color);
-    cursor: pointer;
-    transition: all 0.4s ease;
-    box-sizing: border-box;
-    text-align: center;
-    background-color: transparent;
-    display: flex;
-    gap: 0.5rem;
-    line-height: 110%;
-    align-items: center;
-    justify-content: center;
+button,
+.btn {
+  font-size: 1.15rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 3rem;
+  border: 1px solid var(--ft-text-color);
+  color: var(--ft-text-color);
+  cursor: pointer;
+  transition: all 0.4s ease;
+  box-sizing: border-box;
+  text-align: center;
+  background-color: transparent;
+  display: flex;
+  gap: 0.5rem;
+  line-height: 110%;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary {
-    background-color: var(--ft-text-color);
-    color: white;
+  background-color: var(--ft-text-color);
+  color: white;
+}
+
+.btn-primary--invert {
+  background-color: var(--ft-bg-color);
+  color: var(--ft-text-color);
+  border-color: var(--ft-bg-color);
+}
+
+.btn-secondary--invert {
+  background-color: transparent;
+  border-color: var(--ft-bg-color);
+  color: var(--ft-bg-color);
+}
+
+
+.btn-copy {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--ft-text-color);
+  cursor: pointer;
+  transition: color 0.4s ease;
+}
+
+.btn-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: opacity 0.3s ease;
+}
+
+/* По умолчанию скрываем галочку */
+.btn-copy .icon-success {
+  display: none;
+}
+
+/* В обычном состоянии показываем копирование */
+.btn-copy .icon-default {
+  display: block;
+}
+
+/* Когда скопировано — меняем видимость */
+.btn-copy.is-copied .icon-default {
+  display: none;
+}
+
+.btn-copy.is-copied .icon-success {
+  display: block;
 }
 
 .link-underline {
-    font-size: 1.15rem;
-    font-weight: 500;
-    text-decoration: underline;
-    transition: color 0.4s ease;
+  font-size: 1.15rem;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: color 0.4s ease;
 }
 
 .btn-filter {
@@ -53,7 +108,6 @@ button, .btn {
 
 .btn-filter--active {
   color: var(--ft-accent-color);
-
 }
 
 .btn-filter--active::before {
@@ -63,7 +117,8 @@ button, .btn {
 }
 
 @media (hover: hover) {
-  button:hover, .btn:hover  {
+  button:hover,
+  .btn:hover {
     color: var(--ft-accent-color);
     border-color: var(--ft-accent-color);
   }
@@ -79,7 +134,8 @@ button, .btn {
 }
 
 @media (hover: none) {
-  button:active, .btn:active {
+  button:active,
+  .btn:active {
     color: var(--ft-accent-color);
     border-color: var(--ft-accent-color);
   }
@@ -95,13 +151,13 @@ button, .btn {
 }
 
 @media (max-width: 479px) {
-    .btn-group {
-        width: 100%;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
+  .btn-group {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
-    .btn {
-        width: 100%;
-    }
+  .btn {
+    width: 100%;
+  }
 }

@@ -24,13 +24,15 @@ const Hero = ({ data }) => (
       </div>
       <div className="btn-group">
         {data.primary_cta && (
-          <button className="btn btn-primary">{data.primary_cta.label}</button>
+          <Link to={data.primary_cta.payload} className="btn btn-primary">
+            {data.primary_cta.label}
+          </Link>
         )}
 
         {data.secondary_cta && (
-          <button className="btn btn-secondary">
+          <Link to={data.secondary_cta.payload} className="btn btn-secondary">
             {data.secondary_cta.label}
-          </button>
+          </Link>
         )}
       </div>
     </div>
@@ -79,8 +81,9 @@ const PopularServices = ({ data }) => {
         </div>
 
         <div className="btn-group">
-          <Link to="/services" className="btn btn-secondary">{data.cta.label}</Link>
-
+          <Link to="/services" className="btn btn-secondary">
+            {data.cta.label}
+          </Link>
         </div>
       </div>
     </section>
@@ -186,19 +189,21 @@ const Process = ({ data }) => (
 );
 
 const Cta = ({ data }) => (
-  <section className="cta">
-    <div className="container cta__container">
+  <section className="h-cta">
+    <div className="container h-cta__container">
       <div className="h-cta__title-wrap">
         <h3>{data.text}</h3>
       </div>
       <div className="btn-group">
         {data.primary_cta && (
-          <button className="btn btn-primary">{data.primary_cta.label}</button>
+          <Link to="/contact" className="btn btn-primary btn-primary--invert">
+            {data.primary_cta.label}
+          </Link>
         )}
         {data.secondary_cta && (
-          <button className="btn btn-secondary">
+          <Link to="/brief" className="btn btn-secondary btn-secondary--invert">
             {data.secondary_cta.label}
-          </button>
+          </Link>
         )}
       </div>
     </div>

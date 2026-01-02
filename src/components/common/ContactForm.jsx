@@ -248,7 +248,7 @@ export default function ContactForm() {
     setIsSubmitted(false);
   };
 
-  if (servicesLoading) return <PageLoader />;
+ 
 
 
   return (

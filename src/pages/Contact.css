@@ -1,0 +1,87 @@
+.contact-hero {
+  flex-grow: 1;
+  padding: var(--ft--global-padding) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+
+  /* Используем основной цвет фона сайта */
+  background-color: var(--ft-bg-color, #efefef);
+  /* Паттерн с еще меньшей прозрачностью для мягкости */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Crect fill='%23efefef' width='1600' height='800'/%3E%3Cg fill-opacity='0.03'%3E%3Ccircle fill='%23fc4c01' cx='1400' cy='200' r='200'/%3E%3Cpath fill='%231d1d1f' d='M0 800h1600v-100L0 500z'/%3E%3Cpath fill='%23fc4c01' d='M1600 800V600L0 800z'/%3E%3Crect fill='%231d1d1f' x='200' y='100' width='400' height='10' transform='rotate(45 400 100)'/%3E%3Crect fill='%23fc4c01' x='1000' y='500' width='600' height='2' transform='rotate(-15 1300 500)'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+.contact-hero::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Оставляем только одно очень мягкое пятно слева для акцента */
+  background: radial-gradient(
+    circle at 10% 30%,
+    rgba(252, 76, 1, 0.05) 0%,
+    transparent 50%
+  );
+  z-index: 0;
+  animation: calmGlow 12s ease-in-out infinite alternate;
+}
+
+@keyframes calmGlow {
+  0% {
+    opacity: 0.4;
+    transform: translate(0, 0);
+  }
+  100% {
+    opacity: 0.8;
+    transform: translate(2%, 1%);
+  }
+}
+
+.contact-hero__container {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ft--global-gap);
+  position: relative;
+  z-index: 2; /* Поднимаем контент над анимацией */
+
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ft--spacing-size-32);
+  }
+}
+
+.contact-hero__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ft--spacing-size-32);
+  width: 100%;
+}
+
+.contact-hero__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ft--global-gap);
+  max-width: 39rem;
+}
+
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contact-info__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ft--spacing-size-16);
+}

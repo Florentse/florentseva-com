@@ -40,7 +40,7 @@ const LABELS = {
     cases: "Кейсы",
     year: "Год",
     services: "Услуги",
-    site: "Живой сайт",
+    site: "Сайт",
     task: "Задача",
     solution: "Решение",
     order: "Связаться",
@@ -166,14 +166,23 @@ export default function CaseTemplate() {
         </div>
       </section>
 
-      <section className="cta">
-        <div className="container cta__container">
-          <div className="cta__title-wrap">
-            <h3 className="body-medium font-weight-medium">{caseData.ctaText}</h3>
+      <section className="c-cta">
+        <div className="container c-cta__container">
+          <div className="c-cta__title-wrap">
+            <h3 className="body-medium font-weight-medium">
+              {caseData.ctaText}
+            </h3>
           </div>
           <div className="btn-group">
-            <button className="btn btn-primary">{labels.order}</button>
-            <button className="btn btn-secondary">{labels.brief}</button>
+            <Link to="/contact" className="btn btn-primary btn-primary--invert">
+              {labels.order}
+            </Link>
+            <Link
+              to="/brief"
+              className="btn btn-secondary btn-secondary--invert"
+            >
+              {labels.brief}
+            </Link>
           </div>
         </div>
       </section>

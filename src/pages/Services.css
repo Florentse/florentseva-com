@@ -8,6 +8,7 @@
   flex-direction: column;
   gap: var(--ft--spacing-size-20);
   transition: all 0.4s ease;
+  background-color: rgba(255, 255, 255, 0);
 }
 
 .service-card__link {
@@ -214,7 +215,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--ft--global-gap);
-  max-width: 35rem;
+  max-width: 30rem;
 }
 
 @media (min-width: 1024px) {

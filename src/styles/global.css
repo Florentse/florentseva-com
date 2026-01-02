@@ -125,6 +125,9 @@
 }
 
 @media (hover: hover) {
+  .service-card:hover {
+    border-color: var(--ft-accent-color);
+  }
   .service-card:hover .service-card__link,
   .service-card:hover h3,
   .case-card:hover h3,

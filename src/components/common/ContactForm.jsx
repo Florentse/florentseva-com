@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import useLocaleCurrent from "../../hooks/useLocaleCurrent";
 import useServicesPublished from "../../hooks/useServicesPublished";
 
+import PageLoader from "../common/PageLoader";
+
 const FORM_LABELS = {
   en: {
     formTitle: "Still have questions? Write to us.",
@@ -21,7 +23,7 @@ const FORM_LABELS = {
     placeholders: {
       name: "John Doe",
       email: "example@mail.com",
-      message: "How can we help you?",
+      message: "Your question here...",
     },
   },
   ru: {
@@ -39,7 +41,7 @@ const FORM_LABELS = {
     placeholders: {
       name: "Иван Иванов",
       email: "example@mail.com",
-      message: "Чем мы можем вам помочь?",
+      message: "Ваш вопрос здесь...",
     },
   },
 };
@@ -135,14 +137,11 @@ export default function ContactForm() {
           captchaToken: token,
         };
 
-        console.log(
-          ">>> [Frontend] Сформированный payload (теперь service):",
-          payload
-        );
-
+        // 3. Отправка данных на сервер
         const isDev = import.meta.env.DEV;
         let response;
 
+        // Локальный тест напрямую в Airtable
         if (isDev) {
           const AIRTABLE_URL = `https://api.airtable.com/v0/${
             import.meta.env.VITE_AIRTABLE_BASE_ID
@@ -249,7 +248,8 @@ export default function ContactForm() {
     setIsSubmitted(false);
   };
 
-  if (servicesLoading) return null; // Или можно показать лоадер
+  if (servicesLoading) return <PageLoader />;
+
 
   return (
     <form className="contact-form" onSubmit={handleSubmit}>

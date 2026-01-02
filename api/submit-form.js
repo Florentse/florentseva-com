@@ -21,8 +21,6 @@ export default async function handler(req, res) {
     SMTP_PASSWORD,
   } = process.env;
 
-  console.log(">>> [API Start] Получен запрос от:", email);
-
   try {
     // 3. Проверка reCAPTCHA
     const captchaVerify = await fetch(
@@ -32,11 +30,10 @@ export default async function handler(req, res) {
     const captchaData = await captchaVerify.json();
 
     if (!captchaData.success || captchaData.score < 0.5) {
-      console.error(">>> [Auth Error] Капча не пройдена");
       return res.status(403).json({ message: "Security check failed" });
     }
 
-    // 4. Поиск или создание контакта в Airtable
+    // 4. Поиск или обновление контакта в Airtable
     const searchUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts?filterByFormula=({email}='${email}')`;
     const searchRes = await fetch(searchUrl, {
       headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
@@ -45,8 +42,23 @@ export default async function handler(req, res) {
 
     let contactRecordId = searchData.records?.[0]?.id;
 
-    if (!contactRecordId) {
-      console.log(">>> [Airtable] Создаем новый контакт...");
+    if (contactRecordId) {
+      // Если контакт найден — обновляем его имя и локаль
+      await fetch(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts/${contactRecordId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fields: { name, locale: locale_id ? [locale_id] : [] },
+          }),
+        }
+      );
+    } else {
+      // Если контакта нет — создаем новый
       const createRes = await fetch(
         `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Contacts`,
         {
@@ -92,14 +104,10 @@ export default async function handler(req, res) {
       const errorText = await leadRes.text();
       throw new Error(`Airtable Lead Error: ${errorText}`);
     }
-    console.log(">>> [Airtable] Lead успешно создан");
 
     // 6. Поиск шаблона письма и перевода услуги (используем новые Lookup-поля)
     const templateFormula = `({locale_id_hidden}='${locale_id}')`;
     const transFormula = `AND({service_id_hidden}='${service_id}', {locale_id_hidden}='${locale_id}')`;
-
-    console.log(">>> [Airtable] Новая формула шаблона:", templateFormula);
-    console.log(">>> [Airtable] Новая формула перевода:", transFormula);
 
     const [tRes, sRes] = await Promise.all([
       fetch(
@@ -123,16 +131,6 @@ export default async function handler(req, res) {
     const tData = await tRes.json();
     const sData = await sRes.json();
 
-    // Эти логи теперь должны показать наличие записей
-    console.log(
-      ">>> [Airtable Raw] Шаблонов найдено:",
-      tData.records?.length || 0
-    );
-    console.log(
-      ">>> [Airtable Raw] Переводов найдено:",
-      sData.records?.length || 0
-    );
-
     // 7. Отправка письма, если шаблон найден
     if (tData.records && tData.records.length > 0) {
       const template = tData.records[0].fields;
@@ -147,17 +145,24 @@ export default async function handler(req, res) {
       });
 
       await transporter.sendMail({
-        from: `"Tatiana Florentseva" <${SMTP_USER}>`,
+        from: `"Florentseva" <${SMTP_USER}>`,
         to: email,
         subject: template.subject,
         html: `
           <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
             <p>${template.greeting} ${name}!</p>
-            <p>${template.topic_intro} <strong>${serviceTitle}</strong>. ${template.message_body}</p>
+            <br/>
+            <br/>
+            <p>${template.topic_intro} <strong>${serviceTitle}</strong>. ${
+          template.message_body
+        }</p>
+            <br/>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #777;">
+              ${template.footer ? template.footer.replace(/\n/g, "<br/>") : ""}
+            </div>
           </div>
         `,
       });
-      console.log(">>> [Mail Success] Письмо отправлено на", email);
     }
 
     // 8. Финальный ответ

@@ -18,19 +18,21 @@ const ALLOWED_TABLES = [
   "Pages",
   "Page Meta Translations",
   "Page Sections",
-  "Page Section Translations"
+  "Page Section Translations",
 ];
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Method not allowed' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Method not allowed" });
   }
 
   const { tableName, ...options } = req.query;
 
   // ПРОВЕРКА: Если таблицы нет в белом списке — блокируем запрос
   if (!ALLOWED_TABLES.includes(tableName)) {
-    return res.status(403).json({ message: 'Access denied: Table is not public' });
+    return res
+      .status(403)
+      .json({ message: "Access denied: Table is not public" });
   }
 
   const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
@@ -39,7 +41,9 @@ export default async function handler(req, res) {
   try {
     const urlParams = new URLSearchParams(options);
     const response = await fetch(
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}?${urlParams.toString()}`,
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+        tableName
+      )}?${urlParams.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
@@ -48,6 +52,14 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
+
+    // Кэшируем результат: 1 минута в браузере, 10 минут на сервере (Edge)
+    // stale-while-revalidate позволяет отдавать старый кэш, пока обновляется новый
+    res.setHeader(
+      "Cache-Control",
+      "public, s-maxage=600, stale-while-revalidate=1200"
+    );
+
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ error: error.message });

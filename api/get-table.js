@@ -19,6 +19,11 @@ const ALLOWED_TABLES = [
   "Page Meta Translations",
   "Page Sections",
   "Page Section Translations",
+  "Currencies",
+  "Brief Budget",
+  "Brief Budget Translations",
+  "Brief Deadlines",
+  "Brief Deadline Translations"
 ];
 
 export default async function handler(req, res) {

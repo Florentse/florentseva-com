@@ -4,7 +4,8 @@ export default function PageLoader() {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      height: '100svh',
+      height: '100%',
+      flexGrow: 1,
       width: '100%'
     }}>
       <div style={{

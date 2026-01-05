@@ -81,9 +81,10 @@ export default async function handler(req, res) {
     }
 
     // 5. Поиск шаблона письма именно для брифа (Brief Lead - EN/RU)
-    // Ищем шаблон, где в названии есть "Brief Lead" и совпадает locale_id [cite: 39]
-
     const templateFormula = `AND(FIND('${locale_id}', {locale_id_hidden} & ""), FIND("Brief Lead", {Name}))`;
+
+    console.log(">>> [Debug] Locale ID:", locale_id);
+    console.log(">>> [Debug] Search Formula:", templateFormula);
 
     const tRes = await fetch(
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(
@@ -95,10 +96,15 @@ export default async function handler(req, res) {
     );
 
     const tData = await tRes.json();
+    console.log(
+      ">>> [Debug] Found templates count:",
+      tData.records?.length || 0
+    );
 
     // 6. Отправка письма, если шаблон найден
     if (tData.records && tData.records.length > 0) {
       const template = tData.records[0].fields;
+      console.log(">>> [Debug] Using Template:", template.Name);
 
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
@@ -107,35 +113,46 @@ export default async function handler(req, res) {
         auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
       });
 
-      await transporter.sendMail({
-        from: `"Florentseva" <${SMTP_USER}>`,
-        to: cleanEmail,
-        subject: template.subject,
-        html: `
-          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
-            <p>${template.greeting} ${cleanName}!</p>
-            <p>
-              ${
-                template.message_body
-                  ? template.message_body.replace(/\n/g, "<br/>")
-                  : ""
-              }
-            </p>
-            <br/>
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-              <div style="font-size: 12px; color: #777; margin-bottom: 10px;">
+      try {
+        await transporter.sendMail({
+          from: `"Florentseva" <${SMTP_USER}>`,
+          to: cleanEmail,
+          subject: template.subject,
+          html: `
+            <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
+              <p>${template.greeting} ${cleanName}!</p>
+              <p>
                 ${
-                  template.footer ? template.footer.replace(/\n/g, "<br/>") : ""
+                  template.message_body
+                    ? template.message_body.replace(/\n/g, "<br/>")
+                    : ""
                 }
+              </p>
+              <br/>
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                <div style="font-size: 12px; color: #777; margin-bottom: 10px;">
+                  ${
+                    template.footer
+                      ? template.footer.replace(/\n/g, "<br/>")
+                      : ""
+                  }
+                </div>
+                <a href="https://florentseva.com" 
+                   style="font-size: 13px; color: #000; text-decoration: none; font-weight: 600; border-bottom: 1px solid #000; padding-bottom: 2px;">
+                  florentseva.com
+                </a>
               </div>
-              <a href="https://florentseva.com" 
-                 style="font-size: 13px; color: #000; text-decoration: none; font-weight: 600; border-bottom: 1px solid #000; padding-bottom: 2px;">
-                florentseva.com
-              </a>
             </div>
-          </div>
-        `,
-      });
+          `,
+        });
+        console.log(">>> [Debug] Email sent successfully to:", cleanEmail);
+      } catch (mailError) {
+        console.error(">>> [Debug] Nodemailer Error:", mailError.message);
+      }
+    } else {
+      console.warn(
+        ">>> [Debug] Template NOT FOUND. Check if 'Brief Lead' is in Name and locale matches."
+      );
     }
 
     return res.status(200).json({ success: true });

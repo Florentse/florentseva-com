@@ -289,6 +289,7 @@ export default async function handler(req, res) {
       });
 
       // Б. Письмо администратору
+      const adminSubject = isRu ? "Новая заявка" : "New request";
       await transporter.sendMail({
         from: `"System" <${SMTP_USER}>`,
         to: "contact@florentseva.com",

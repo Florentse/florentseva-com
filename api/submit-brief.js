@@ -83,7 +83,7 @@ export default async function handler(req, res) {
     // 5. Поиск шаблона письма именно для брифа (Brief Lead - EN/RU)
     // Ищем шаблон, где в названии есть "Brief Lead" и совпадает locale_id [cite: 39]
 
-    const templateFormula = `AND({locale_id_hidden}='${locale_id}', SEARCH("Brief Lead", {Name}) > 0)`;
+    const templateFormula = `AND(FIND('${locale_id}', {locale_id_hidden} & ""), FIND("Brief Lead", {Name}))`;
 
     const tRes = await fetch(
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(

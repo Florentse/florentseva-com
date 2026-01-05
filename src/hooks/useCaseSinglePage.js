@@ -7,6 +7,7 @@ import useLocaleCurrent from "./useLocaleCurrent";
 export default function useCaseSinglePage(slug) {
   const { locale, loading: localeLoading } = useLocaleCurrent();
   const [caseData, setCaseData] = useState(null);
+  const [seo, setSeo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export default function useCaseSinglePage(slug) {
 
         if (!baseCase) {
           setCaseData(null);
+          setSeo(null);
           setLoading(false);
           return;
         }
@@ -45,6 +47,14 @@ export default function useCaseSinglePage(slug) {
             Array.isArray(t.locale) &&
             t.locale.includes(locale.recordId)
         );
+
+        // Формируем SEO данные
+        setSeo({
+          title: baseCase.title, // Берем общий заголовок из Cases
+          description: translation?.meta_description || "", // Из Case Translations
+          ogImage: baseCase.open_graph?.[0]?.url || null, // Из Cases
+          lang: locale.code
+        });
 
         // 3. Собираем названия связанных услуг 
         const caseServices = Array.isArray(baseCase.services)
@@ -107,5 +117,5 @@ export default function useCaseSinglePage(slug) {
     );
   }, [slug, locale, localeLoading]);
 
-  return { caseData, loading };
+  return { caseData, seo,loading };
 }

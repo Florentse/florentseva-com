@@ -1,10 +1,12 @@
-
 import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
 import usePageSections from "../hooks/usePageSections";
 import useLocaleCurrent from "../hooks/useLocaleCurrent";
 import useServicesPublished from "../hooks/useServicesPublished";
+
+import usePageSeo from "../hooks/usePageSeo";
+import Seo from "../components/Seo";
 
 import StackLogos from "../components/common/StackLogos";
 import PageLoader from "../components/common/PageLoader";
@@ -35,7 +37,12 @@ const ServiceCard = ({ service, btnLabel }) => (
 
 export default function Services() {
   const { sections, loading: pageLoading } = usePageSections("services");
-  const { services, categories, loading: servicesLoading } = useServicesPublished();
+  const seoData = usePageSeo("services");
+  const {
+    services,
+    categories,
+    loading: servicesLoading,
+  } = useServicesPublished();
   const { locale } = useLocaleCurrent();
   const [activeFilter, setActiveFilter] = useState("all");
   const scrollRef = useRef(null);
@@ -46,12 +53,18 @@ export default function Services() {
 
   const handleFilterClick = (id) => {
     setActiveFilter(id);
-    
+
     if (scrollRef.current) {
       // Получаем значение офсета из CSS переменной (превращаем в число)
-      const offset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--scroll-top-offset')) || 0;
-      const elementPosition = scrollRef.current.getBoundingClientRect().top + window.pageYOffset;
-      
+      const offset =
+        parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--scroll-top-offset"
+          )
+        ) || 0;
+      const elementPosition =
+        scrollRef.current.getBoundingClientRect().top + window.pageYOffset;
+
       window.scrollTo({
         top: elementPosition - offset,
         behavior: "smooth",
@@ -59,12 +72,16 @@ export default function Services() {
     }
   };
 
-  const filteredServices = activeFilter === "all"
-    ? services
-    : services.filter(service => service.categoryIds?.includes(activeFilter));
+  const filteredServices =
+    activeFilter === "all"
+      ? services
+      : services.filter((service) =>
+          service.categoryIds?.includes(activeFilter)
+        );
 
   return (
     <>
+      {seoData && <Seo {...seoData} />}
       {sections.map((section, index) => {
         // --- Секция HERO ---
         if (section.key === "s-hero") {
@@ -87,25 +104,34 @@ export default function Services() {
         // --- Секция СПИСОК УСЛУГ ---
         if (section.key === "s-services-list") {
           return (
-            <section key={section.id} className="s-services-list" ref={scrollRef}>
+            <section
+              key={section.id}
+              className="s-services-list"
+              ref={scrollRef}
+            >
               <div className="container s-services-list__container">
                 <div className="s-services-list__filters-wrap">
-                  <button 
-                    className={`btn-filter ${activeFilter === "all" ? "btn-filter--active" : ""}`}
+                  <button
+                    className={`btn-filter ${
+                      activeFilter === "all" ? "btn-filter--active" : ""
+                    }`}
                     onClick={() => handleFilterClick("all")}
                   >
                     {section.filters?.all_label || "All"}
                   </button>
 
-                  {!servicesLoading && categories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      className={`btn-filter ${activeFilter === cat.id ? "btn-filter--active" : ""}`}
-                      onClick={() => handleFilterClick(cat.id)}
-                    >
-                      {cat.title}
-                    </button>
-                  ))}
+                  {!servicesLoading &&
+                    categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        className={`btn-filter ${
+                          activeFilter === cat.id ? "btn-filter--active" : ""
+                        }`}
+                        onClick={() => handleFilterClick(cat.id)}
+                      >
+                        {cat.title}
+                      </button>
+                    ))}
                 </div>
 
                 <div className="s-services-list__grid">
@@ -132,7 +158,10 @@ export default function Services() {
 
         // --- Заглушка для неизвестных секций ---
         return (
-          <section key={section.id} style={{ border: "1px dashed red", padding: "10px" }}>
+          <section
+            key={section.id}
+            style={{ border: "1px dashed red", padding: "10px" }}
+          >
             <strong>Unknown section key:</strong> {section.key}
           </section>
         );

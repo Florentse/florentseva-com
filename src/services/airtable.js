@@ -41,3 +41,38 @@ export async function fetchTable(tableName, options = {}) {
 
   return allRecords;
 }
+
+
+/**
+ * Получает SEO-данные для конкретной страницы и локали
+ * @param {string} pageSlug - Slug страницы (например, 'home')
+ * @param {string} localeRecordId - ID записи локали из Airtable
+ */
+export async function fetchPageSeo(pageSlug, localeRecordId) {
+  try {
+    // 1. Получаем ID страницы по её slug
+    const pages = await fetchTable("Pages", {
+      filterByFormula: `{slug}='${pageSlug}'`,
+    });
+
+    if (pages.length === 0) return null;
+    const pageId = pages[0].recordId;
+
+    // 2. Ищем мета-данные, связанные с этой страницей и этой локалью
+    const seoRecords = await fetchTable("Page Meta Translations", {
+      filterByFormula: `AND({page_id_hidden}='${pageId}', {locale_id_hidden}='${localeRecordId}')`,
+    });
+
+    if (seoRecords.length === 0) return null;
+    const fields = seoRecords[0];
+
+    return {
+      title: fields["title-tag"],
+      description: fields["meta_description"],
+      keywords: fields["key_words"],
+      ogImage: fields["open_graph"]?.[0]?.url || null,
+    };
+  } catch (error) {
+    return null;
+  }
+}

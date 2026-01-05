@@ -3,6 +3,9 @@ import { useParams, Link } from "react-router-dom";
 import useLocaleCurrent from "../hooks/useLocaleCurrent";
 import useCaseSinglePage from "../hooks/useCaseSinglePage";
 import PageLoader from "../components/common/PageLoader";
+
+import Seo from "../components/Seo";
+
 import NotFound from "./NotFound";
 import "./Cases.css";
 
@@ -50,7 +53,7 @@ const LABELS = {
 
 export default function CaseTemplate() {
   const { slug } = useParams();
-  const { caseData, loading } = useCaseSinglePage(slug);
+  const { caseData, seo, loading } = useCaseSinglePage(slug);
   const { locale } = useLocaleCurrent();
 
   const currentLang = locale?.code === "ru" ? "ru" : "en";
@@ -60,14 +63,30 @@ export default function CaseTemplate() {
   if (!caseData) return <NotFound />;
 
   return (
-    <article className="case-template">
+
+    <>
+    {/* Конфигурация SEO для кейса */}
+      {seo && (
+        <Seo
+          {...seo}
+          ogType="article"
+          schemaData={{
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            "name": seo.title,
+            "headline": seo.title,
+            "description": seo.description,
+            "image": seo.ogImage,
+            "author": {
+              "@type": "Person",
+              "name": "Tatiana Florentseva"
+            }
+          }}
+        />
+      )}
+
       <section
         className="case-hero"
-        // style={
-        //   caseData.heroImage
-        //     ? { backgroundImage: `url(${caseData.heroImage})` }
-        //     : {}
-        // }
       >
         <div className="container case-hero__container">
           <div className="case-hero__content">
@@ -186,6 +205,6 @@ export default function CaseTemplate() {
           </div>
         </div>
       </section>
-    </article>
+    </>
   );
 }

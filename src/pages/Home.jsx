@@ -7,6 +7,9 @@ import useLocaleCurrent from "../hooks/useLocaleCurrent";
 import useServicesPopular from "../hooks/useServicesPopular";
 import useCasesSelected from "../hooks/useCasesSelected";
 
+import usePageSeo from "../hooks/usePageSeo";
+import Seo from "../components/Seo";
+
 import StackLogos from "../components/common/StackLogos";
 import PageLoader from "../components/common/PageLoader";
 import CardLoader from "../components/common/CardLoader";
@@ -48,6 +51,7 @@ const ServiceCard = ({ service, btnLabel }) => (
 );
 
 const PopularServices = ({ data }) => {
+
   const { services, loading } = useServicesPopular();
   const { locale } = useLocaleCurrent();
 
@@ -228,11 +232,27 @@ const SECTION_COMPONENTS = {
 
 export default function Home() {
   const { sections, loading } = usePageSections("home");
+  const seoData = usePageSeo("home");
 
   if (loading) return <PageLoader />;
 
   return (
-    <main>
+    <>
+      {/* Если данные загрузились, рендерим Seo */}
+      {seoData && (
+        <Seo
+          {...seoData}
+          ogType="website"
+          schemaData={{
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: seoData.title,
+            description: seoData.description,
+            url: window.location.origin,
+          }}
+        />
+      )}
+
       {sections.map((section, index) => {
         const Component = SECTION_COMPONENTS[section.key] || DefaultSection;
         return (
@@ -242,6 +262,6 @@ export default function Home() {
           </div>
         );
       })}
-    </main>
+    </>
   );
 }

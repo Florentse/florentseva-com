@@ -4,6 +4,9 @@ import useServicesPublished from "../hooks/useServicesPublished";
 import ContactForm from "../components/common/ContactForm";
 import PageLoader from "../components/common/PageLoader";
 
+import usePageSeo from "../hooks/usePageSeo";
+import Seo from "../components/Seo";
+
 import emailIcon from "../assets/icons/email.svg";
 import telegramIcon from "../assets/icons/telegram.svg";
 import bookingIcon from "../assets/icons/booking.svg";
@@ -38,6 +41,7 @@ const CONTACT_LABELS = {
 
 export default function Contact() {
   const { locale } = useLocaleCurrent();
+  const seoData = usePageSeo("contact");
   const { loading: servicesLoading } = useServicesPublished();
   const [copiedField, setCopiedField] = useState(null);
 
@@ -53,6 +57,7 @@ export default function Contact() {
 
   return (
     <>
+    {seoData && <Seo {...seoData} />}
       <section className="contact-hero">
         <div className="container contact-hero__container">
           <div className="contact-hero__content">

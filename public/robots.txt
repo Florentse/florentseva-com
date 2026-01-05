@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Разрешаем индексацию для основных ИИ-ботов (актуально на 2026)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Ссылка на динамическую карту сайта
+Sitemap: https://florentseva.com/sitemap.xml

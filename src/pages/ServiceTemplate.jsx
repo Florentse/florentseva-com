@@ -4,6 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import useLocaleCurrent from "../hooks/useLocaleCurrent";
 import useServiceSinglePage from "../hooks/useServiceSinglePage";
 
+import Seo from "../components/Seo";
+
 import ContactForm from "../components/common/ContactForm";
 
 import PageLoader from "../components/common/PageLoader";
@@ -21,7 +23,8 @@ const LABELS = {
     processTitle: "Main implementation steps:",
     faqsTitle: "FAQ",
     formTitle: "Still have questions?",
-    formSubtitle: "Fill out the form to clarify technical details and implementation stages."
+    formSubtitle:
+      "Fill out the form to clarify technical details and implementation stages.",
   },
   ru: {
     order: "Заказать услугу",
@@ -34,7 +37,8 @@ const LABELS = {
     processTitle: "Основные этапы реализации:",
     faqsTitle: "FAQ",
     formTitle: "Остались вопросы?",
-    formSubtitle: "Заполните форму для уточнения технических деталей и этапов реализации."
+    formSubtitle:
+      "Заполните форму для уточнения технических деталей и этапов реализации.",
   },
 };
 
@@ -172,7 +176,6 @@ const FAQs = ({ data, labels }) => (
   </section>
 );
 
-
 const CTA = ({ labels }) => (
   <section className="s-contact-form">
     <div className="container s-contact-form__container">
@@ -184,7 +187,7 @@ const CTA = ({ labels }) => (
           </p>
         )}
       </div>
-      <ContactForm /> 
+      <ContactForm />
     </div>
   </section>
 );
@@ -201,17 +204,35 @@ const SECTION_COMPONENTS = {
 export default function ServiceTemplate() {
   const { slug } = useParams();
   const { locale } = useLocaleCurrent();
-  const { sections, loading: sectionsLoading } = useServiceSinglePage(slug);
-
+  const {
+    sections,
+    seo,
+    loading: sectionsLoading,
+  } = useServiceSinglePage(slug);
 
   const labels = LABELS[locale?.code] || LABELS.en;
 
- if (sectionsLoading) return <PageLoader />;
+  if (sectionsLoading) return <PageLoader />;
   if (!sections) return <div>Service not found</div>;
 
-
- return (
+  return (
     <>
+      {seo && (
+        <Seo
+          {...seo}
+          ogType="article"
+          schemaData={{
+            "@context": "https://schema.org",
+            "@type": "Service",
+            name: seo.title,
+            description: seo.description,
+            provider: {
+              "@type": "Person",
+              name: "Tatiana Florentseva",
+            },
+          }}
+        />
+      )}
       {sections.map((section, index) => {
         const Component = SECTION_COMPONENTS[section.key];
         if (!Component)

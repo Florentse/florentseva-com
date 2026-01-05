@@ -3,6 +3,9 @@ import useLocaleCurrent from "../hooks/useLocaleCurrent";
 import useBriefData from "../hooks/useBriefData";
 import PageLoader from "../components/common/PageLoader";
 
+import usePageSeo from "../hooks/usePageSeo";
+import Seo from "../components/Seo";
+
 import "./Brief.css";
 
 const FORM_LABELS = {
@@ -118,6 +121,7 @@ const FORM_LABELS = {
 
 export default function Brief() {
   const { locale } = useLocaleCurrent();
+  const seoData = usePageSeo("brief");
   const { categories, services, currencies, budgets, deadlines, loading } =
     useBriefData();
   const dropdownRef = useRef(null);
@@ -282,444 +286,450 @@ export default function Brief() {
   const labels = FORM_LABELS[locale?.code] || FORM_LABELS.en;
 
   return (
-    <section className="brief">
-      <div className="container">
-        <div className="brief__title-wrap">
-          <h1 className="brief__title">{labels.heading}</h1>
-        </div>
+    <>
+      {seoData && <Seo {...seoData} />}
+      <section className="brief">
+        <div className="container">
+          <div className="brief__title-wrap">
+            <h1 className="brief__title">{labels.heading}</h1>
+          </div>
 
-        <form className="brief-form" onSubmit={handleSubmit}>
-          {isSubmitted ? (
-            <div className="brief-form__success-message">
-              <h2 className="brief-form__success-title">
-                {labels.successTitle}
-              </h2>
-              <p className="brief-form__success-text">
-                {labels.successMessage} <strong>{userDetails.email}</strong>.
-              </p>
-              <button
-                type="button"
-                className="btn btn--secondary"
-                onClick={() => setIsSubmitted(false)}
-              >
-                {labels.writeMore}
-              </button>
-            </div>
-          ) : (
-            <div className="brief-form__content">
-              {/* 1. ВЫБОР КАТЕГОРИЙ [cite: 20, 21] */}
-              {!isMobile && (
-                <div className="brief-form__step is-category-select">
-                  <h2 className="body-small">{labels.title_category}</h2>
-                  <div className="brief-form__category-select-group">
-                    {categories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        className={`brief-form__category-select-btn ${
-                          selectedCats.includes(cat.id) ? "is-active" : ""
-                        } ${
-                          isExcluded(cat, selectedCats, categories)
-                            ? "is-disabled"
-                            : ""
-                        }`}
-                        onClick={() => toggleCategory(cat.id)}
-                      >
-                        {cat.title}
-                      </button>
-                    ))}
+          <form className="brief-form" onSubmit={handleSubmit}>
+            {isSubmitted ? (
+              <div className="brief-form__success-message">
+                <h2 className="brief-form__success-title">
+                  {labels.successTitle}
+                </h2>
+                <p className="brief-form__success-text">
+                  {labels.successMessage} <strong>{userDetails.email}</strong>.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn--secondary"
+                  onClick={() => setIsSubmitted(false)}
+                >
+                  {labels.writeMore}
+                </button>
+              </div>
+            ) : (
+              <div className="brief-form__content">
+                {/* 1. ВЫБОР КАТЕГОРИЙ [cite: 20, 21] */}
+                {!isMobile && (
+                  <div className="brief-form__step is-category-select">
+                    <h2 className="body-small">{labels.title_category}</h2>
+                    <div className="brief-form__category-select-group">
+                      {categories.map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          className={`brief-form__category-select-btn ${
+                            selectedCats.includes(cat.id) ? "is-active" : ""
+                          } ${
+                            isExcluded(cat, selectedCats, categories)
+                              ? "is-disabled"
+                              : ""
+                          }`}
+                          onClick={() => toggleCategory(cat.id)}
+                        >
+                          {cat.title}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* 2. ВЫБОР УСЛУГ [cite: 23, 24, 25, 26] */}
-              <div className="brief-form__step is-services-select">
-                {/* На мобилках показываем все категории, на десктопе - только выбранные */}
-                {categories
-                  .filter((cat) =>
-                    isMobile ? true : selectedCats.includes(cat.id)
-                  )
-                  .map((cat) => (
-                    <div
-                      key={cat.id}
-                      className="brief-form__selected-category-item"
-                    >
-                      <div className="brief-form__selected-category-info">
-                        <h3 className="title-small">{cat.title}</h3>
-                        <p className="body-medium">{cat.description}</p>
-                      </div>
-                      <div className="brief-form__selected-services-list">
-                        {services
-                          .filter((s) => s.categoryIds.includes(cat.id))
-                          .map((s) => (
-                            <div
-                              key={s.id}
-                              className="brief-form__selected-service-item"
-                            >
-                              <button
-                                type="button"
-                                className={`brief-form__selected-service-btn ${
-                                  selectedServs.includes(s.id)
-                                    ? "is-active"
-                                    : ""
-                                } ${
-                                  isExcluded(s, selectedServs, services)
-                                    ? "is-disabled"
-                                    : ""
-                                }`}
-                                onClick={() => toggleService(s.id)}
+                {/* 2. ВЫБОР УСЛУГ [cite: 23, 24, 25, 26] */}
+                <div className="brief-form__step is-services-select">
+                  {/* На мобилках показываем все категории, на десктопе - только выбранные */}
+                  {categories
+                    .filter((cat) =>
+                      isMobile ? true : selectedCats.includes(cat.id)
+                    )
+                    .map((cat) => (
+                      <div
+                        key={cat.id}
+                        className="brief-form__selected-category-item"
+                      >
+                        <div className="brief-form__selected-category-info">
+                          <h3 className="title-small">{cat.title}</h3>
+                          <p className="body-medium">{cat.description}</p>
+                        </div>
+                        <div className="brief-form__selected-services-list">
+                          {services
+                            .filter((s) => s.categoryIds.includes(cat.id))
+                            .map((s) => (
+                              <div
+                                key={s.id}
+                                className="brief-form__selected-service-item"
                               >
-                                <span className="square"></span>
-                                <p className="body-medium">{s.title}</p>
-                              </button>
-                              <div className="brief-form__selected-service-info">
-                                <span className="hint-icon">?</span>
-                                <div className="brief-form__selected-service-tooltip">
-                                  <p className="body-small">
-                                    {s.description || s.title}
-                                  </p>
+                                <button
+                                  type="button"
+                                  className={`brief-form__selected-service-btn ${
+                                    selectedServs.includes(s.id)
+                                      ? "is-active"
+                                      : ""
+                                  } ${
+                                    isExcluded(s, selectedServs, services)
+                                      ? "is-disabled"
+                                      : ""
+                                  }`}
+                                  onClick={() => toggleService(s.id)}
+                                >
+                                  <span className="square"></span>
+                                  <p className="body-medium">{s.title}</p>
+                                </button>
+                                <div className="brief-form__selected-service-info">
+                                  <span className="hint-icon">?</span>
+                                  <div className="brief-form__selected-service-tooltip">
+                                    <p className="body-small">
+                                      {s.description || s.title}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-
-              {/* 3. ДЕТАЛИ ПРОЕКТА [cite: 28, 29, 30, 31] */}
-              <div className="brief-form__step is-project-details">
-                <h2 className="title-small">{labels.title_project_details}</h2>
-                <div className="brief-form__details-group">
-                  <div className="form-grid--two-columns">
-                    <div className="form-group">
-                      <label className="brief-form__input-label">
-                        {labels.projectNameLabel} *
-                      </label>
-                      <input
-                        type="text"
-                        name="projectName"
-                        placeholder={labels.placeholders.projectName}
-                        value={projectDetails.projectName}
-                        onChange={handleProjectChange}
-                        className="brief-form__input"
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="brief-form__input-label">
-                        {labels.projectSiteLinkLabel}
-                      </label>
-                      <input
-                        type="text"
-                        name="projectSiteLink"
-                        placeholder={labels.placeholders.projectSiteLink}
-                        value={projectDetails.projectSiteLink}
-                        onChange={handleProjectChange}
-                        className="brief-form__input"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="brief-form__input-label">
-                      {labels.projectBusinessLabel} *
-                    </label>
-                    <input
-                      type="text"
-                      name="projectBusiness"
-                      placeholder={labels.placeholders.projectBusiness}
-                      value={projectDetails.projectBusiness}
-                      onChange={handleProjectChange}
-                      className="brief-form__input"
-                    />
-                    <p className="brief-form__input-hint">
-                      {labels.projectBusinessHint}
-                    </p>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="brief-form__input-label">
-                      {labels.projectBriefLabel}
-                    </label>
-                    <input
-                      type="text"
-                      name="projectBrief"
-                      placeholder={labels.placeholders.projectBrief}
-                      value={projectDetails.projectBrief}
-                      onChange={handleProjectChange}
-                      className="brief-form__input"
-                    />
-                    <p className="brief-form__input-hint">
-                      {labels.projectBriefHint}
-                    </p>
-                  </div>
-
-                  <div className="form-grid--two-columns">
-                    <div className="form-group">
-                      <label className="brief-form__input-label">
-                        {labels.projectBranbookLabel}
-                      </label>
-                      <input
-                        type="text"
-                        name="projectBranbook"
-                        placeholder={labels.placeholders.projectBranbook}
-                        value={projectDetails.projectBranbook}
-                        onChange={handleProjectChange}
-                        className="brief-form__input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="brief-form__input-label">
-                        {labels.projectFigmaLabel}
-                      </label>
-                      <input
-                        type="text"
-                        name="projectFigma"
-                        placeholder={labels.placeholders.projectFigma}
-                        value={projectDetails.projectFigma}
-                        onChange={handleProjectChange}
-                        className="brief-form__input"
-                      />
-                    </div>
-                  </div>
-
-                  {/* ДРОПДАУН СРОКИ [cite: 29] */}
-                  <div className="form-group" ref={dropdownRef}>
-                    <label className="brief-form__input-label">
-                      {labels.projectDeadlineLabel} *
-                    </label>
-                    <div
-                      className={`form-dropdown ${
-                        activeDropdown === "deadline" ? "is-open" : ""
-                      }`}
-                    >
-                      <div
-                        className="form-dropdown__toggle"
-                        onClick={() =>
-                          setActiveDropdown(
-                            activeDropdown === "deadline" ? null : "deadline"
-                          )
-                        }
-                      >
-                        {deadlines.find((d) => d.id === selectedDeadline)
-                          ?.title || labels.projectDeadlineSelectPlaceholder}
-                      </div>
-
-                      {/* ДОБАВЛЕНО УСЛОВИЕ */}
-                      {activeDropdown === "deadline" && (
-                        <div className="form-dropdown__list">
-                          {deadlines.map((d) => (
-                            <label key={d.id} className="form-dropdown__item">
-                              <input
-                                type="radio"
-                                name="deadline"
-                                value={d.id}
-                                checked={selectedDeadline === d.id}
-                                onChange={() => {
-                                  setSelectedDeadline(d.id);
-                                  setActiveDropdown(null);
-                                }}
-                              />
-                              <span>{d.title}</span>
-                            </label>
-                          ))}
+                            ))}
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    ))}
+                </div>
 
-                  {/* БЮДЖЕТ И ВАЛЮТА [cite: 30, 31] */}
-                  <div className="form-group">
-                    <label className="brief-form__input-label">
-                      {labels.projectBudgetLabel} *
-                    </label>
-                    <div className="form-flex-row">
-                      {/* БЮДЖЕТ ПРОЕКТА */}
+                {/* 3. ДЕТАЛИ ПРОЕКТА [cite: 28, 29, 30, 31] */}
+                <div className="brief-form__step is-project-details">
+                  <h2 className="title-small">
+                    {labels.title_project_details}
+                  </h2>
+                  <div className="brief-form__details-group">
+                    <div className="form-grid--two-columns">
+                      <div className="form-group">
+                        <label className="brief-form__input-label">
+                          {labels.projectNameLabel} *
+                        </label>
+                        <input
+                          type="text"
+                          name="projectName"
+                          placeholder={labels.placeholders.projectName}
+                          value={projectDetails.projectName}
+                          onChange={handleProjectChange}
+                          className="brief-form__input"
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="brief-form__input-label">
+                          {labels.projectSiteLinkLabel}
+                        </label>
+                        <input
+                          type="text"
+                          name="projectSiteLink"
+                          placeholder={labels.placeholders.projectSiteLink}
+                          value={projectDetails.projectSiteLink}
+                          onChange={handleProjectChange}
+                          className="brief-form__input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="brief-form__input-label">
+                        {labels.projectBusinessLabel} *
+                      </label>
+                      <input
+                        type="text"
+                        name="projectBusiness"
+                        placeholder={labels.placeholders.projectBusiness}
+                        value={projectDetails.projectBusiness}
+                        onChange={handleProjectChange}
+                        className="brief-form__input"
+                      />
+                      <p className="brief-form__input-hint">
+                        {labels.projectBusinessHint}
+                      </p>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="brief-form__input-label">
+                        {labels.projectBriefLabel}
+                      </label>
+                      <input
+                        type="text"
+                        name="projectBrief"
+                        placeholder={labels.placeholders.projectBrief}
+                        value={projectDetails.projectBrief}
+                        onChange={handleProjectChange}
+                        className="brief-form__input"
+                      />
+                      <p className="brief-form__input-hint">
+                        {labels.projectBriefHint}
+                      </p>
+                    </div>
+
+                    <div className="form-grid--two-columns">
+                      <div className="form-group">
+                        <label className="brief-form__input-label">
+                          {labels.projectBranbookLabel}
+                        </label>
+                        <input
+                          type="text"
+                          name="projectBranbook"
+                          placeholder={labels.placeholders.projectBranbook}
+                          value={projectDetails.projectBranbook}
+                          onChange={handleProjectChange}
+                          className="brief-form__input"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="brief-form__input-label">
+                          {labels.projectFigmaLabel}
+                        </label>
+                        <input
+                          type="text"
+                          name="projectFigma"
+                          placeholder={labels.placeholders.projectFigma}
+                          value={projectDetails.projectFigma}
+                          onChange={handleProjectChange}
+                          className="brief-form__input"
+                        />
+                      </div>
+                    </div>
+
+                    {/* ДРОПДАУН СРОКИ [cite: 29] */}
+                    <div className="form-group" ref={dropdownRef}>
+                      <label className="brief-form__input-label">
+                        {labels.projectDeadlineLabel} *
+                      </label>
                       <div
                         className={`form-dropdown ${
-                          activeDropdown === "budget" ? "is-open" : ""
+                          activeDropdown === "deadline" ? "is-open" : ""
                         }`}
                       >
                         <div
                           className="form-dropdown__toggle"
                           onClick={() =>
                             setActiveDropdown(
-                              activeDropdown === "budget" ? null : "budget"
+                              activeDropdown === "deadline" ? null : "deadline"
                             )
                           }
                         >
-                          {budgets.find((b) => b.id === selectedBudget)
-                            ?.budgetTextsByCurrency[selectedCurrency] ||
-                            labels.projectBudgetSelectPlaceholder}
+                          {deadlines.find((d) => d.id === selectedDeadline)
+                            ?.title || labels.projectDeadlineSelectPlaceholder}
                         </div>
 
-                        {/* Список показываем только если activeDropdown === "budget" */}
-                        {activeDropdown === "budget" && (
+                        {/* ДОБАВЛЕНО УСЛОВИЕ */}
+                        {activeDropdown === "deadline" && (
                           <div className="form-dropdown__list">
-                            {budgets.map((b) => (
-                              <label
-                                key={b.id}
-                                className="form-dropdown__item"
-                                onClick={() => {
-                                  setSelectedBudget(b.id);
-                                  setActiveDropdown(null);
-                                }}
-                              >
+                            {deadlines.map((d) => (
+                              <label key={d.id} className="form-dropdown__item">
                                 <input
                                   type="radio"
-                                  name="budget"
-                                  readOnly
-                                  checked={selectedBudget === b.id}
+                                  name="deadline"
+                                  value={d.id}
+                                  checked={selectedDeadline === d.id}
+                                  onChange={() => {
+                                    setSelectedDeadline(d.id);
+                                    setActiveDropdown(null);
+                                  }}
                                 />
-                                <span>
-                                  {b.budgetTextsByCurrency[selectedCurrency] ||
-                                    "—"}
-                                </span>
+                                <span>{d.title}</span>
                               </label>
                             ))}
                           </div>
                         )}
                       </div>
-                      <div className="brief-form__currency-switch">
-                        {currencies.map((curr) => (
+                    </div>
+
+                    {/* БЮДЖЕТ И ВАЛЮТА [cite: 30, 31] */}
+                    <div className="form-group">
+                      <label className="brief-form__input-label">
+                        {labels.projectBudgetLabel} *
+                      </label>
+                      <div className="form-flex-row">
+                        {/* БЮДЖЕТ ПРОЕКТА */}
+                        <div
+                          className={`form-dropdown ${
+                            activeDropdown === "budget" ? "is-open" : ""
+                          }`}
+                        >
                           <div
-                            key={curr.id}
-                            className={`brief-form__currency-option ${
-                              selectedCurrency === curr.id ? "is-active" : ""
-                            }`}
-                            onClick={() => setSelectedCurrency(curr.id)}
+                            className="form-dropdown__toggle"
+                            onClick={() =>
+                              setActiveDropdown(
+                                activeDropdown === "budget" ? null : "budget"
+                              )
+                            }
                           >
-                            {curr.code}
+                            {budgets.find((b) => b.id === selectedBudget)
+                              ?.budgetTextsByCurrency[selectedCurrency] ||
+                              labels.projectBudgetSelectPlaceholder}
                           </div>
-                        ))}
+
+                          {/* Список показываем только если activeDropdown === "budget" */}
+                          {activeDropdown === "budget" && (
+                            <div className="form-dropdown__list">
+                              {budgets.map((b) => (
+                                <label
+                                  key={b.id}
+                                  className="form-dropdown__item"
+                                  onClick={() => {
+                                    setSelectedBudget(b.id);
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  <input
+                                    type="radio"
+                                    name="budget"
+                                    readOnly
+                                    checked={selectedBudget === b.id}
+                                  />
+                                  <span>
+                                    {b.budgetTextsByCurrency[
+                                      selectedCurrency
+                                    ] || "—"}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="brief-form__currency-switch">
+                          {currencies.map((curr) => (
+                            <div
+                              key={curr.id}
+                              className={`brief-form__currency-option ${
+                                selectedCurrency === curr.id ? "is-active" : ""
+                              }`}
+                              onClick={() => setSelectedCurrency(curr.id)}
+                            >
+                              {curr.code}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="form-group">
-                    <label className="brief-form__input-label">
-                      {labels.projectMessageLabel}
-                    </label>
-                    <textarea
-                      name="projectMessage"
-                      placeholder={labels.placeholders.projectMessage}
-                      value={projectDetails.projectMessage}
-                      onChange={handleProjectChange}
-                      rows={4}
-                      className="brief-form__input"
-                    />
-                    <p className="brief-form__input-hint">
-                      {labels.projectMessageHint}
-                    </p>
+                    <div className="form-group">
+                      <label className="brief-form__input-label">
+                        {labels.projectMessageLabel}
+                      </label>
+                      <textarea
+                        name="projectMessage"
+                        placeholder={labels.placeholders.projectMessage}
+                        value={projectDetails.projectMessage}
+                        onChange={handleProjectChange}
+                        rows={4}
+                        className="brief-form__input"
+                      />
+                      <p className="brief-form__input-hint">
+                        {labels.projectMessageHint}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* 4. ДАННЫЕ ПОЛЬЗОВАТЕЛЯ [cite: 32, 33] */}
-              <div className="brief-form__step is-user-details">
-                <h2 className="title-small">{labels.title_user_details}</h2>
-                <div className="brief-form__details-group">
-                  <div className="form-grid--two-columns">
-                    <div className="form-group">
-                      <label className="brief-form__input-label">
-                        {labels.userNameLabel} *
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        placeholder={labels.placeholders.name}
-                        value={userDetails.name}
-                        onChange={handleUserChange}
-                        className="brief-form__input"
-                        required
-                      />
+                {/* 4. ДАННЫЕ ПОЛЬЗОВАТЕЛЯ [cite: 32, 33] */}
+                <div className="brief-form__step is-user-details">
+                  <h2 className="title-small">{labels.title_user_details}</h2>
+                  <div className="brief-form__details-group">
+                    <div className="form-grid--two-columns">
+                      <div className="form-group">
+                        <label className="brief-form__input-label">
+                          {labels.userNameLabel} *
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          placeholder={labels.placeholders.name}
+                          value={userDetails.name}
+                          onChange={handleUserChange}
+                          className="brief-form__input"
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="brief-form__input-label">
+                          {labels.userRoleLabel}
+                        </label>
+                        <input
+                          type="text"
+                          name="role"
+                          placeholder={labels.placeholders.role}
+                          value={userDetails.role}
+                          onChange={handleUserChange}
+                          className="brief-form__input"
+                        />
+                      </div>
+                    </div>
+                    <div className="form-grid--two-columns">
+                      <div className="form-group">
+                        <label className="brief-form__input-label">
+                          {labels.userEmailLabel} *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          placeholder={labels.placeholders.email}
+                          value={userDetails.email}
+                          onChange={handleUserChange}
+                          className="brief-form__input"
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="brief-form__input-label">
+                          {labels.userTelegramLabel}
+                        </label>
+                        <input
+                          type="text"
+                          name="telegram"
+                          placeholder={labels.placeholders.telegram}
+                          value={userDetails.telegram}
+                          onChange={handleUserChange}
+                          className="brief-form__input"
+                        />
+                      </div>
                     </div>
                     <div className="form-group">
                       <label className="brief-form__input-label">
-                        {labels.userRoleLabel}
+                        {labels.userMessageLabel}
                       </label>
-                      <input
-                        type="text"
-                        name="role"
-                        placeholder={labels.placeholders.role}
-                        value={userDetails.role}
+                      <textarea
+                        name="userMessage"
+                        placeholder={labels.placeholders.message}
+                        value={userDetails.userMessage}
                         onChange={handleUserChange}
+                        rows={4}
                         className="brief-form__input"
                       />
+                      <p className="brief-form__input-hint">
+                        {labels.userMessageHint}
+                      </p>
                     </div>
                   </div>
-                  <div className="form-grid--two-columns">
-                    <div className="form-group">
-                      <label className="brief-form__input-label">
-                        {labels.userEmailLabel} *
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        placeholder={labels.placeholders.email}
-                        value={userDetails.email}
-                        onChange={handleUserChange}
-                        className="brief-form__input"
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="brief-form__input-label">
-                        {labels.userTelegramLabel}
-                      </label>
-                      <input
-                        type="text"
-                        name="telegram"
-                        placeholder={labels.placeholders.telegram}
-                        value={userDetails.telegram}
-                        onChange={handleUserChange}
-                        className="brief-form__input"
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label className="brief-form__input-label">
-                      {labels.userMessageLabel}
-                    </label>
-                    <textarea
-                      name="userMessage"
-                      placeholder={labels.placeholders.message}
-                      value={userDetails.userMessage}
+                </div>
+
+                <div className="form-footer brief-form__footer">
+                  <label className="checkbox-label body-small">
+                    <input
+                      name="privacy"
+                      type="checkbox"
+                      required
+                      checked={userDetails.privacy}
                       onChange={handleUserChange}
-                      rows={4}
-                      className="brief-form__input"
                     />
-                    <p className="brief-form__input-hint">
-                      {labels.userMessageHint}
-                    </p>
-                  </div>
+                    <span>{labels.privacyLabel}</span>
+                  </label>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={!isFormValid || isSubmitting}
+                  >
+                    {isSubmitting ? labels.sending : labels.submitBtn}
+                  </button>
                 </div>
               </div>
-
-              <div className="form-footer brief-form__footer">
-                <label className="checkbox-label body-small">
-                  <input
-                    name="privacy"
-                    type="checkbox"
-                    required
-                    checked={userDetails.privacy}
-                    onChange={handleUserChange}
-                  />
-                  <span>{labels.privacyLabel}</span>
-                </label>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={!isFormValid || isSubmitting}
-                >
-                  {isSubmitting ? labels.sending : labels.submitBtn}
-                </button>
-              </div>
-            </div>
-          )}
-        </form>
-      </div>
-    </section>
+            )}
+          </form>
+        </div>
+      </section>
+    </>
   );
 }

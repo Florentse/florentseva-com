@@ -5,6 +5,9 @@ import usePageSections from "../hooks/usePageSections";
 import useLocaleCurrent from "../hooks/useLocaleCurrent";
 import useCasesPublished from "../hooks/useCasesPublished";
 
+import usePageSeo from "../hooks/usePageSeo";
+import Seo from "../components/Seo";
+
 import PageLoader from "../components/common/PageLoader";
 import CardLoader from "../components/common/CardLoader";
 
@@ -54,6 +57,7 @@ const CaseCard = ({ item, btnLabel }) => (
 
 export default function Cases() {
   const { sections, loading: pageLoading } = usePageSections("cases");
+  const seoData = usePageSeo("cases");
   const { cases, services, loading: casesLoading } = useCasesPublished();
   const { locale } = useLocaleCurrent();
   const [activeFilter, setActiveFilter] = useState("all");
@@ -92,6 +96,7 @@ export default function Cases() {
 
   return (
     <>
+      {seoData && <Seo {...seoData} />}
       {sections.map((section) => {
         if (section.key === "c-hero") {
           return (

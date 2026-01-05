@@ -7,6 +7,7 @@ import useLocaleCurrent from "./useLocaleCurrent";
 const useServiceSinglePage = (slug) => {
   const { locale, loading: localeLoading } = useLocaleCurrent();
   const [sections, setSections] = useState(null);
+  const [seo, setSeo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +40,16 @@ const useServiceSinglePage = (slug) => {
             Array.isArray(t.locale) &&
             t.locale.includes(locale.recordId)
         );
+
+        // Формируем SEO-данные из полей перевода услуги
+        if (translation) {
+          setSeo({
+            title: translation.title,
+            description: translation.about_service,
+            ogImage: translation.open_graph?.[0]?.url || null,
+            lang: locale.code
+          });
+        }
 
         const processes = allProcesses
           .filter(
@@ -89,7 +100,7 @@ const useServiceSinglePage = (slug) => {
     loadData();
   }, [slug, locale, localeLoading]);
 
-  return { sections, loading };
+  return { sections, seo, loading };
 };
 
 export default useServiceSinglePage;

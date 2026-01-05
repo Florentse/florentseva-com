@@ -5,6 +5,9 @@ import { Link } from "react-router-dom";
 import usePageSections from "../hooks/usePageSections";
 import useLocaleCurrent from "../hooks/useLocaleCurrent";
 
+import usePageSeo from "../hooks/usePageSeo";
+import Seo from "../components/Seo";
+
 import PageLoader from "../components/common/PageLoader";
 
 import aboutPhoto from "../assets/images/my-photo.png";
@@ -13,11 +16,13 @@ import "./About.css";
 
 export default function About() {
   const { sections, loading } = usePageSections("about");
+  const seoData = usePageSeo("about");
 
   if (loading) return <PageLoader />;
 
   return (
     <>
+    {seoData && <Seo {...seoData} />}
       {sections.map((section) => {
         // Секция Hero
         if (section.key === "a-hero") {

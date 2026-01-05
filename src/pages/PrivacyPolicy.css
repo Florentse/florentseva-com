@@ -1,0 +1,20 @@
+.privacy-policy {
+    padding: var(--ft--spacing-size-48) 0;
+}
+
+.privacy-policy__title {
+    margin-bottom: var(--ft--spacing-size-32);
+}
+
+.privacy-policy__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ft--spacing-size-32);
+    margin-top: var(--ft--spacing-size-32);
+}
+
+.privacy-policy__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}

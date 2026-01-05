@@ -170,7 +170,6 @@
     color: var(--ft-text-color);
     padding: var(--ft--spacing-size-12);
     border: 1px solid var(--ft-border-color);
-    border-radius: 0.25rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     opacity: 0;
     visibility: hidden;

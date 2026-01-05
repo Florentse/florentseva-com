@@ -81,7 +81,7 @@ export default async function handler(req, res) {
     }
 
     // 5. Поиск шаблона письма именно для брифа (Brief Lead - EN/RU)
-    const templateFormula = `AND(FIND('${locale_id}', {locale_id_hidden} & ""), FIND("Brief Lead", {Name}))`;
+    const templateFormula = `AND({locale_id_hidden} = '${locale_id}', SEARCH("Brief Lead", {title}))`;
 
     console.log(">>> [Debug] Locale ID:", locale_id);
     console.log(">>> [Debug] Search Formula:", templateFormula);

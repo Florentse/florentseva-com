@@ -42,7 +42,7 @@ export default function StackLogos() {
           <img
             src={item.icon}
             alt={item.name}
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            style={{ height: "100%", width: "auto", objectFit: "contain" }}
           />
         </div>
       ))}

@@ -256,6 +256,7 @@ export default async function handler(req, res) {
         </div>
       `;
 
+      // Письмо пользователю
       await transporter.sendMail({
         from: `"Florentseva" <${SMTP_USER}>`,
         to: cleanEmail,
@@ -268,9 +269,7 @@ export default async function handler(req, res) {
                 ? template.message_body.replace(/\n/g, "<br/>")
                 : ""
             }</p>
-            
             ${detailsHtml}
-
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <div style="font-size: 12px; color: #777; margin-bottom: 10px;">
                 ${
@@ -282,15 +281,14 @@ export default async function handler(req, res) {
           </div>
         `,
       });
-    }
 
-    // 7. Отправка уведомления администратору
-    const adminSubject = isRu ? "Новая заявка" : "New request";
-    await transporter.sendMail({
-      from: `"Florentseva System" <${SMTP_USER}>`,
-      to: SMTP_USER,
-      subject: `${adminSubject} — ${cleanName}`,
-      html: `
+      // 7. Отправка уведомления администратору
+      const adminSubject = isRu ? "Новая заявка" : "New request";
+      await transporter.sendMail({
+        from: `"Florentseva System" <${SMTP_USER}>`,
+        to: SMTP_USER,
+        subject: `${adminSubject} — ${cleanName}`,
+        html: `
           <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
             <h1 style="font-size: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
               ${adminSubject}
@@ -298,7 +296,8 @@ export default async function handler(req, res) {
             ${detailsHtml}
           </div>
         `,
-    });
+      });
+    }
 
     return res.status(200).json({ success: true });
   } catch (error) {

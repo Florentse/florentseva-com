@@ -7,6 +7,8 @@ import useLocaleCurrent from "../hooks/useLocaleCurrent";
 
 import PageLoader from "../components/common/PageLoader";
 
+import aboutPhoto from "../assets/images/my-photo.png";
+
 import "./About.css";
 
 export default function About() {
@@ -37,7 +39,9 @@ export default function About() {
             <section key={section.id} className="a-philosophy">
               <div className="container">
                 <div className="a-philosophy__wrap">
-                  <p className=" body-medium font-weight-medium a-philosophy__quote">{section.quote}</p>
+                  <p className=" body-medium font-weight-medium a-philosophy__quote">
+                    {section.quote}
+                  </p>
                   {section.author && (
                     <cite className=" body-small a-philosophy__author">
                       — {section.author}
@@ -58,10 +62,77 @@ export default function About() {
                 <div className="a-focus__grid">
                   {section.items?.map((item, idx) => (
                     <div key={idx} className="a-focus__card">
-                      <h3 className="body-medium font-weight-medium">{item.title}</h3>
+                      <h3 className="body-medium font-weight-medium">
+                        {item.title}
+                      </h3>
                       <p className="body-small">{item.description}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        // Секция Experience
+        if (section.key === "a-experience") {
+          return (
+            <section key={section.id} className="a-experience">
+              <div className="container">
+                <h2 className="a-experience__title title-medium">
+                  {section.title_h2}
+                </h2>
+                <div className="a-experience__content">
+                  <div className="a-experience__photo-wrap">
+                    <img
+                      src={aboutPhoto}
+                      alt="Татьяна Флоренцева"
+                      className="a-experience__photo"
+                    />
+                  </div>
+                  <ul className="a-experience__list">
+                    {section.items?.map((item, idx) => (
+                      <li key={idx} className="a-experience__item">
+                        <h3 className="body-medium font-weight-medium">
+                          {item.h3}
+                        </h3>
+                        <p className="body-small">{item.p}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        // Секция CTA
+        if (section.key === "a-cta") {
+          return (
+            <section key={section.id} className="a-cta">
+              <div className="container a-cta__container">
+                <div className="a-cta__title-wrap">
+                  <p className="body-medium font-weight-medium">
+                    {section.text}
+                  </p>
+                </div>
+                <div className="btn-group">
+                  {section.primary_cta && (
+                    <Link
+                      to={section.primary_cta.payload}
+                      className="btn btn-primary btn-primary--invert"
+                    >
+                      {section.primary_cta.label}
+                    </Link>
+                  )}
+                  {section.secondary_cta && (
+                    <Link
+                      to={section.secondary_cta.payload}
+                      className="btn btn-secondary btn-secondary--invert"
+                    >
+                      {section.secondary_cta.label}
+                    </Link>
+                  )}
                 </div>
               </div>
             </section>

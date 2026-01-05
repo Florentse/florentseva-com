@@ -172,12 +172,12 @@ export default async function handler(req, res) {
         auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
       });
 
-      // Вспомогательные функции (теперь ссылки показывают полный URL)
-      const row = (label, value) =>
+      // Вспомогательные функции
+      const row = (label, value, isLast = false) =>
         value
           ? `<tr>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: 600; width: 160px; color: #777; font-size: 12px; text-transform: uppercase; vertical-align: top;">${label}:</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #111; word-break: break-all;">${value}</td>
+              <td style="padding: 10px 0; ${isLast ? "" : "border-bottom: 1px solid #eee;"} font-weight: 600; width: 160px; color: #777; font-size: 12px; text-transform: uppercase; vertical-align: top; text-align: left;">${label}:</td>
+              <td style="padding: 10px 0; ${isLast ? "" : "border-bottom: 1px solid #eee;"} font-size: 14px; color: #111; word-break: break-all; text-align: left;">${value}</td>
             </tr>`
           : "";
 
@@ -235,7 +235,8 @@ export default async function handler(req, res) {
               )}
               ${row(
                 labels.fields.projectMessage,
-                project_data.projectMessage?.replace(/\n/g, "<br/>")
+                project_data.projectMessage?.replace(/\n/g, "<br/>"),
+                true
               )}
             </table>
           </div>
@@ -256,7 +257,8 @@ export default async function handler(req, res) {
               ${row(labels.fields.userTelegram, telegram)}
               ${row(
                 labels.fields.userMessage,
-                project_data.userMessage?.replace(/\n/g, "<br/>")
+                project_data.userMessage?.replace(/\n/g, "<br/>"),
+                true
               )}
             </table>
           </div>

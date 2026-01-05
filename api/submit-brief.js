@@ -83,9 +83,6 @@ export default async function handler(req, res) {
     // 5. Поиск шаблона письма именно для брифа (Brief Lead - EN/RU)
     const templateFormula = `AND({locale_id_hidden} = '${locale_id}', SEARCH("Brief Lead", {title}))`;
 
-    console.log(">>> [Debug] Locale ID:", locale_id);
-    console.log(">>> [Debug] Search Formula:", templateFormula);
-
     const tRes = await fetch(
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(
         templateFormula
@@ -96,15 +93,42 @@ export default async function handler(req, res) {
     );
 
     const tData = await tRes.json();
-    console.log(
-      ">>> [Debug] Found templates count:",
-      tData.records?.length || 0
-    );
 
     // 6. Отправка письма, если шаблон найден
     if (tData.records && tData.records.length > 0) {
       const template = tData.records[0].fields;
-      console.log(">>> [Debug] Using Template:", template.Name);
+
+      // Определяем язык для заголовков в письме на основе заголовка шаблона
+      const isRu = template.title?.toLowerCase().includes("ru");
+      const labels = isRu
+        ? {
+            contactInfo: "Контактная информация",
+            projectInfo: "Детали проекта",
+            name: "Имя",
+            role: "Роль",
+            telegram: "Telegram",
+            projectName: "Проект",
+            industry: "Отрасль",
+            site: "Сайт",
+            budget: "Бюджет",
+            deadline: "Сроки",
+            links: "Ссылки (Бриф/Брендбук/Figma)",
+            message: "Сообщение",
+          }
+        : {
+            contactInfo: "Contact Information",
+            projectInfo: "Project Details",
+            name: "Name",
+            role: "Role",
+            telegram: "Telegram",
+            projectName: "Project",
+            industry: "Industry",
+            site: "Website",
+            budget: "Budget",
+            deadline: "Timeline",
+            links: "Links (Brief/Brandbook/Figma)",
+            message: "Message",
+          };
 
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
@@ -113,46 +137,132 @@ export default async function handler(req, res) {
         auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
       });
 
-      try {
-        await transporter.sendMail({
-          from: `"Florentseva" <${SMTP_USER}>`,
-          to: cleanEmail,
-          subject: template.subject,
-          html: `
-            <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
-              <p>${template.greeting} ${cleanName}!</p>
-              <p>
-                ${
-                  template.message_body
-                    ? template.message_body.replace(/\n/g, "<br/>")
-                    : ""
-                }
-              </p>
-              <br/>
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                <div style="font-size: 12px; color: #777; margin-bottom: 10px;">
+      // Формируем блок с данными проекта
+      const infoStyle =
+        "padding: 8px 0; border-bottom: 1px solid #eee; vertical-align: top;";
+      const labelStyle = "font-weight: 600; width: 150px; color: #666;";
+
+      const detailsHtml = `
+        <div style="margin-top: 25px; background: #f9f9f9; padding: 20px; border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 16px; border-bottom: 2px solid #000; padding-bottom: 8px;">${
+            labels.contactInfo
+          }</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr><td style="${labelStyle}">${
+        labels.name
+      }:</td><td style="${infoStyle}">${cleanName}</td></tr>
+            ${
+              role
+                ? `<tr><td style="${labelStyle}">${labels.role}:</td><td style="${infoStyle}">${role}</td></tr>`
+                : ""
+            }
+            ${
+              telegram
+                ? `<tr><td style="${labelStyle}">${labels.telegram}:</td><td style="${infoStyle}">${telegram}</td></tr>`
+                : ""
+            }
+          </table>
+
+          <h3 style="margin-top: 20px; font-size: 16px; border-bottom: 2px solid #000; padding-bottom: 8px;">${
+            labels.projectInfo
+          }</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr><td style="${labelStyle}">${
+        labels.projectName
+      }:</td><td style="${infoStyle}">${project_data.projectName}</td></tr>
+            ${
+              project_data.projectBusiness
+                ? `<tr><td style="${labelStyle}">${labels.industry}:</td><td style="${infoStyle}">${project_data.projectBusiness}</td></tr>`
+                : ""
+            }
+            ${
+              project_data.projectSiteLink
+                ? `<tr><td style="${labelStyle}">${labels.site}:</td><td style="${infoStyle}">${project_data.projectSiteLink}</td></tr>`
+                : ""
+            }
+            <tr><td style="${labelStyle}">${
+        labels.budget
+      }:</td><td style="${infoStyle}">${
+        project_data.selected_budget_text || "—"
+      }</td></tr>
+            <tr><td style="${labelStyle}">${
+        labels.deadline
+      }:</td><td style="${infoStyle}">${
+        project_data.selected_deadline_text || "—"
+      }</td></tr>
+            ${
+              project_data.projectBrief ||
+              project_data.projectBranbook ||
+              project_data.projectFigma
+                ? `
+              <tr>
+                <td style="${labelStyle}">${labels.links}:</td>
+                <td style="${infoStyle}">
                   ${
-                    template.footer
-                      ? template.footer.replace(/\n/g, "<br/>")
+                    project_data.projectBrief
+                      ? `<a href="${project_data.projectBrief}">Brief</a> `
                       : ""
                   }
-                </div>
-                <a href="https://florentseva.com" 
-                   style="font-size: 13px; color: #000; text-decoration: none; font-weight: 600; border-bottom: 1px solid #000; padding-bottom: 2px;">
-                  florentseva.com
-                </a>
+                  ${
+                    project_data.projectBranbook
+                      ? `<a href="${project_data.projectBranbook}">Brandbook</a> `
+                      : ""
+                  }
+                  ${
+                    project_data.projectFigma
+                      ? `<a href="${project_data.projectFigma}">Figma</a>`
+                      : ""
+                  }
+                </td>
+              </tr>`
+                : ""
+            }
+            ${
+              project_data.projectMessage
+                ? `<tr><td style="${labelStyle}">${
+                    labels.message
+                  }:</td><td style="${infoStyle}">${project_data.projectMessage.replace(
+                    /\n/g,
+                    "<br/>"
+                  )}</td></tr>`
+                : ""
+            }
+          </table>
+        </div>
+      `;
+
+      await transporter.sendMail({
+        from: `"Florentseva" <${SMTP_USER}>`,
+        to: cleanEmail,
+        subject: template.subject,
+        html: `
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
+            <p>${template.greeting} ${cleanName}!</p>
+            <p>
+              ${
+                template.message_body
+                  ? template.message_body.replace(/\n/g, "<br/>")
+                  : ""
+              }
+            </p>
+            
+            ${detailsHtml}
+
+            <br/>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <div style="font-size: 12px; color: #777; margin-bottom: 10px;">
+                ${
+                  template.footer ? template.footer.replace(/\n/g, "<br/>") : ""
+                }
               </div>
+              <a href="https://florentseva.com" 
+                 style="font-size: 13px; color: #000; text-decoration: none; font-weight: 600; border-bottom: 1px solid #000; padding-bottom: 2px;">
+                florentseva.com
+              </a>
             </div>
-          `,
-        });
-        console.log(">>> [Debug] Email sent successfully to:", cleanEmail);
-      } catch (mailError) {
-        console.error(">>> [Debug] Nodemailer Error:", mailError.message);
-      }
-    } else {
-      console.warn(
-        ">>> [Debug] Template NOT FOUND. Check if 'Brief Lead' is in Name and locale matches."
-      );
+          </div>
+        `,
+      });
     }
 
     return res.status(200).json({ success: true });

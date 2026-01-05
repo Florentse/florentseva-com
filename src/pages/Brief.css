@@ -258,3 +258,22 @@
     color: white;
 }
 
+.brief-form__footer button[disabled] {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+
+.brief-form__success-message {
+    padding-top: var(--ft--spacing-size-64);
+    margin-left: calc((100% - var(--ft--global-gap)) / 4);
+    max-width: 30rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ft--spacing-size-32);
+    @media (max-width: 768px) {
+        margin-left: 0;
+        max-width: 100%;
+        padding-top: 0;
+    }
+}

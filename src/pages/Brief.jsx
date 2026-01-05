@@ -46,18 +46,18 @@ const FORM_LABELS = {
       "You will receive a response within 3 working days to your email",
     writeMore: "Write more",
     placeholders: {
-      projectName: "Company/Project Name",
+      projectName: "Brand/Company name",
       projectSiteLink: "www.example.com",
-      projectBusiness: "Your business industry",
-      projectBrief: "Paste here the link to your brief",
-      projectBranbook: "Paste here the link to your brandbook",
-      projectFigma: "Paste here the link to your Figma",
-      projectMessage: "Your message here...",
-      name: "John Doe",
-      role: "Project Manager",
-      email: "example@mail.com",
-      telegram: "@example",
-      message: "Your message here...",
+      projectBusiness: "Industry",
+      projectBrief: "URL",
+      projectBranbook: "URL",
+      projectFigma: "URL",
+      projectMessage: "Goals and requirements",
+      name: "Full name",
+      role: "Founder / Manager",
+      email: "mail@example.com",
+      telegram: "@username",
+      message: "Additional info",
     },
   },
   ru: {
@@ -100,18 +100,18 @@ const FORM_LABELS = {
     successMessage: "Вы получите ответ в течении 3х рабочих дней на ваш емаил",
     writeMore: "Написать еще",
     placeholders: {
-      projectName: "Название компании/проекта",
+      projectName: "Название бренда",
       projectSiteLink: "www.example.com",
-      projectBusiness: "Отрасль вашего бизнеса",
-      projectBrief: "Вставьте здесь ссылку на ваш бриф",
-      projectBranbook: "Вставьте здесь ссылку на ваш брендбук",
-      projectFigma: "Вставьте здесь ссылку на ваш Figma",
-      projectMessage: "Ваше сообщение...",
-      name: "Иван Иванов",
-      role: "Менеджер проекта",
-      email: "example@mail.com",
-      telegram: "@example",
-      message: "Ваше сообщение...",
+      projectBusiness: "Сфера",
+      projectBrief: "Ссылка",
+      projectBranbook: "Ссылка",
+      projectFigma: "Ссылка",
+      projectMessage: "Цели и задачи",
+      name: "Имя Фамилия",
+      role: "Основатель / Менеджер",
+      email: "mail@example.com",
+      telegram: "@username",
+      message: "Комментарий",
     },
   },
 };
@@ -393,7 +393,7 @@ export default function Brief() {
                   <div className="form-grid--two-columns">
                     <div className="form-group">
                       <label className="brief-form__input-label">
-                        {labels.projectNameLabel}
+                        {labels.projectNameLabel} *
                       </label>
                       <input
                         type="text"
@@ -422,7 +422,7 @@ export default function Brief() {
 
                   <div className="form-group">
                     <label className="brief-form__input-label">
-                      {labels.projectBusinessLabel}
+                      {labels.projectBusinessLabel} *
                     </label>
                     <input
                       type="text"
@@ -486,7 +486,7 @@ export default function Brief() {
                   {/* ДРОПДАУН СРОКИ [cite: 29] */}
                   <div className="form-group" ref={dropdownRef}>
                     <label className="brief-form__input-label">
-                      {labels.projectDeadlineLabel}
+                      {labels.projectDeadlineLabel} *
                     </label>
                     <div
                       className={`form-dropdown ${
@@ -531,7 +531,7 @@ export default function Brief() {
                   {/* БЮДЖЕТ И ВАЛЮТА [cite: 30, 31] */}
                   <div className="form-group">
                     <label className="brief-form__input-label">
-                      {labels.projectBudgetLabel}
+                      {labels.projectBudgetLabel} *
                     </label>
                     <div className="form-flex-row">
                       {/* БЮДЖЕТ ПРОЕКТА */}
@@ -622,7 +622,7 @@ export default function Brief() {
                   <div className="form-grid--two-columns">
                     <div className="form-group">
                       <label className="brief-form__input-label">
-                        {labels.userNameLabel}
+                        {labels.userNameLabel} *
                       </label>
                       <input
                         type="text"
@@ -651,7 +651,7 @@ export default function Brief() {
                   <div className="form-grid--two-columns">
                     <div className="form-group">
                       <label className="brief-form__input-label">
-                        {labels.userEmailLabel}
+                        {labels.userEmailLabel} *
                       </label>
                       <input
                         type="email"
@@ -683,7 +683,7 @@ export default function Brief() {
                     </label>
                     <textarea
                       name="userMessage"
-                      placeholder={labels.placeholders.userMessage}
+                      placeholder={labels.placeholders.message}
                       value={userDetails.userMessage}
                       onChange={handleUserChange}
                       rows={4}

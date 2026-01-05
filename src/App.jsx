@@ -7,6 +7,8 @@ import useLocaleCurrent from "./hooks/useLocaleCurrent";
 
 import ScrollToTop from "./components/common/ScrollToTop";
 
+import CookiesConsent from "./components/common/CookiesConsent";
+
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceTemplate from "./pages/ServiceTemplate";
@@ -55,6 +57,7 @@ export default function App() {
         </main>
 
         <Footer data={sections.footer} />
+        <CookiesConsent />
       </div>
     </BrowserRouter>
   );

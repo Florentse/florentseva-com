@@ -146,8 +146,11 @@ export default async function handler(req, res) {
     // 7. Отправка письма, если шаблон найден
     if (tData.records && tData.records.length > 0) {
       const template = tData.records[0].fields;
+      const isRu = template.title?.toLowerCase().includes("ru");
+
       const serviceTitle =
-        sData.records?.[0]?.fields?.title || "selected service";
+        sData.records?.[0]?.fields?.title ||
+        (isRu ? "выбранная услуга" : "selected service");
 
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
@@ -156,12 +159,53 @@ export default async function handler(req, res) {
         auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
       });
 
+      const labels = isRu
+        ? {
+            name: "Имя",
+            email: "Email",
+            topic: "Тема вопроса",
+            message: "Вопрос",
+            adminSubject: "Новый вопрос",
+          }
+        : {
+            name: "Name",
+            email: "Email",
+            topic: "Topic",
+            message: "Question",
+            adminSubject: "New Question",
+          };
+
+      const row = (label, value) =>
+        value
+          ? `<tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: 600; width: 160px; color: #777; font-size: 12px; text-transform: uppercase; vertical-align: top;">${label}:</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #111; word-break: break-all;">${value}</td>
+          </tr>`
+          : "";
+
+      const detailsHtml = `
+        <div style="background: #ffffff; border: 1px solid #e0e0e0; overflow: hidden; margin: 20px 0; text-align: left;">
+          <div style="padding: 10px 20px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+              ${row(labels.name, cleanName)}
+              ${row(
+                labels.email,
+                `<a href="mailto:${cleanEmail}" style="color: #0066cc;">${cleanEmail}</a>`
+              )}
+              ${row(labels.topic, serviceTitle)}
+              ${row(labels.message, cleanMessage.replace(/\n/g, "<br/>"))}
+            </table>
+          </div>
+        </div>
+      `;
+
+      // А. Письмо пользователю
       await transporter.sendMail({
         from: `"Florentseva" <${SMTP_USER}>`,
         to: email,
         subject: template.subject,
         html: `
-          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; text-align: left;">
             <p>${template.greeting} ${name}!</p>
             <p>
               ${template.topic_intro} <strong>${serviceTitle}</strong> ${
@@ -170,18 +214,27 @@ export default async function handler(req, res) {
             : ""
         }
             </p>
-            <br/>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <div style="font-size: 12px; color: #777; margin-bottom: 10px;">
                 ${
                   template.footer ? template.footer.replace(/\n/g, "<br/>") : ""
                 }
               </div>
-              <a href="https://florentseva.com" 
-                 style="font-size: 13px; color: #000; text-decoration: none; font-weight: 600; border-bottom: 1px solid #000; padding-bottom: 2px;">
-                florentseva.com
-              </a>
+              <a href="https://florentseva.com" style="font-size: 13px; color: #000; text-decoration: none; font-weight: 600;">florentseva.com</a>
             </div>
+          </div>
+        `,
+      });
+
+      // Б. Письмо администратору
+      await transporter.sendMail({
+        from: `"System" <${SMTP_USER}>`,
+        to: "contact@florentseva.com",
+        replyTo: cleanEmail,
+        subject: `[CONTACT] ${labels.adminSubject}: ${cleanName}`,
+        html: `
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; text-align: left;">
+            ${detailsHtml}
           </div>
         `,
       });

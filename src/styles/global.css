@@ -9,8 +9,16 @@
 }
 
 .stack-item {
-  width: auto;
+  display: flex;
+  align-items: center;
   height: 2rem;
+  flex: 0 0 auto; /* Запрещает сжатие и расширение, оставляет естественную ширину */
+}
+
+.stack-item img {
+  height: 100%;
+  width: auto; /* Позволяет ширине подстраиваться под высоту логотипа */
+  display: block;
 }
 
 .cta {
@@ -79,7 +87,6 @@
   transform: rotateZ(0deg);
   transition: transform 0.6s ease;
   flex-shrink: 0;
-
 }
 
 .faqs__dropdown.is-open svg {
@@ -97,13 +104,7 @@
   line-height: 128%;
 }
 
-
-
-
-
 @media (max-width: 768px) {
-
-
   .stack-logos {
     gap: 2rem;
   }
@@ -112,7 +113,7 @@
     height: 1.25rem;
   }
 
-  .cta__container  {
+  .cta__container {
     display: flex;
     flex-direction: column;
     gap: var(--ft--spacing-size-32);

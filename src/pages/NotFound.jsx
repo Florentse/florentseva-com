@@ -1,8 +1,6 @@
 import React from "react";
 import useLocaleCurrent from "../hooks/useLocaleCurrent";
-import "./PrivacyPolicy.css";
 
-import PageLoader from "../components/common/PageLoader";
 
 const CONTENT = {
   ru: {
@@ -20,17 +18,35 @@ const CONTENT = {
 export default function NotFound() {
   const { locale } = useLocaleCurrent();
   const data = CONTENT[locale?.code] || CONTENT.en;
+
+  const sectionStyle = {
+    flexGrow: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center"
+  };
+
+  const containerStyle = {
+    flexGrow: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "1rem",
+    textAlign: "center"
+  };
+
   return (
-    <div>
-      <section className="404">
-        <div className="container">
-          <h1 className="title-large 404__title">404</h1>
-          <p className="body-large 404__subtitle">Page not found</p>
-          <a href="/" className="button 404__button">
-            Return to homepage
-          </a>
-        </div>
-      </section>
-    </div>
+    <section style={sectionStyle} className="not-found">
+      <div style={containerStyle} className="container">
+        <h1 className="title-large">{data.title}</h1>
+        <p className="body-large">{data.lastUpdated}</p>
+        <a href="/" className="link-underline">
+          {data.button}
+        </a>
+      </div>
+    </section>
   );
 }

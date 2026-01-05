@@ -8,16 +8,16 @@ export default async function handler(req, res) {
   }
 
   // 2. Получение данных из payload
-  const { 
-    name, 
-    email, 
-    role, 
-    telegram, 
+  const {
+    name,
+    email,
+    role,
+    telegram,
     selected_services, // Массив recordId из таблицы Services
-    currency_id,       // recordId из таблицы Currencies
-    locale_id,         // recordId из таблицы Locales
-    project_data,      // Объект со всеми деталями проекта (название, ссылки, бюджет, сроки)
-    captchaToken 
+    currency_id, // recordId из таблицы Currencies
+    locale_id, // recordId из таблицы Locales
+    project_data, // Объект со всеми деталями проекта (название, ссылки, бюджет, сроки)
+    captchaToken,
   } = req.body;
 
   const {
@@ -82,7 +82,8 @@ export default async function handler(req, res) {
 
     // 5. Поиск шаблона письма именно для брифа (Brief Lead - EN/RU)
     // Ищем шаблон, где в названии есть "Brief Lead" и совпадает locale_id [cite: 39]
-    const templateFormula = `AND({locale_id_hidden}='${locale_id}', SEARCH('Brief Lead', {Name}))`;
+
+    const templateFormula = `AND({locale_id_hidden}='${locale_id}', SEARCH("Brief Lead", {Name}) > 0)`;
 
     const tRes = await fetch(
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(
@@ -114,12 +115,18 @@ export default async function handler(req, res) {
           <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
             <p>${template.greeting} ${cleanName}!</p>
             <p>
-              ${template.message_body ? template.message_body.replace(/\n/g, "<br/>") : ""}
+              ${
+                template.message_body
+                  ? template.message_body.replace(/\n/g, "<br/>")
+                  : ""
+              }
             </p>
             <br/>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <div style="font-size: 12px; color: #777; margin-bottom: 10px;">
-                ${template.footer ? template.footer.replace(/\n/g, "<br/>") : ""}
+                ${
+                  template.footer ? template.footer.replace(/\n/g, "<br/>") : ""
+                }
               </div>
               <a href="https://florentseva.com" 
                  style="font-size: 13px; color: #000; text-decoration: none; font-weight: 600; border-bottom: 1px solid #000; padding-bottom: 2px;">

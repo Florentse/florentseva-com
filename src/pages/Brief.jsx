@@ -294,7 +294,7 @@ export default function Brief() {
                 {labels.successTitle}
               </h2>
               <p className="brief-form__success-text">
-                {labels.successMessage}
+                {labels.successMessage} <strong>{userDetails.email}</strong>.
               </p>
               <button
                 type="button"

@@ -80,15 +80,15 @@ export default async function handler(req, res) {
       throw new Error(`Airtable Brief Lead Error: ${errorText}`);
     }
 
-    // 5. Поиск шаблона и названий выбранных услуг
+    // 5. Поиск шаблона и названий выбранных услуг (из Service Translations)
     const templateFormula = `AND({locale_id_hidden} = '${locale_id}', SEARCH("Brief Lead", {title}))`;
 
-    // Формируем фильтр для получения названий всех выбранных услуг
+    // Формула для поиска переводов выбранных услуг для конкретной локали
     const servicesFormula =
       selected_services?.length > 0
-        ? `OR(${selected_services
-            .map((id) => `RECORD_ID()='${id}'`)
-            .join(",")})`
+        ? `AND({locale_id_hidden} = '${locale_id}', OR(${selected_services
+            .map((id) => `{service_id_hidden} = '${id}'`)
+            .join(",")}))`
         : "FALSE()";
 
     const [tRes, sNamesRes] = await Promise.all([
@@ -96,22 +96,20 @@ export default async function handler(req, res) {
         `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Response%20Templates?filterByFormula=${encodeURIComponent(
           templateFormula
         )}`,
-        {
-          headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
-        }
+        { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } }
       ),
       fetch(
-        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Services?filterByFormula=${encodeURIComponent(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Service%20Translations?filterByFormula=${encodeURIComponent(
           servicesFormula
         )}&fields[]=title`,
-        {
-          headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
-        }
+        { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } }
       ),
     ]);
 
     const tData = await tRes.json();
     const sNamesData = await sNamesRes.json();
+
+    // Получаем названия из таблицы Service Translations
     const serviceTitles = sNamesData.records?.map((r) => r.fields.title) || [];
 
     // 6. Отправка письма
@@ -185,7 +183,7 @@ export default async function handler(req, res) {
           : "";
 
       const detailsHtml = `
-        <div style="margin-top: 25px; background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+        <div style="margin-top: 25px; background: #fff; border: 1px solid #eee; overflow: hidden;">
           <div style="background: #fcfcfc; padding: 12px 20px; border-bottom: 1px solid #eee;">
             <strong style="text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">${
               labels.secServices

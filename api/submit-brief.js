@@ -120,6 +120,7 @@ export default async function handler(req, res) {
       const labels = isRu
         ? {
             adminNotify: "Уведомление о новом брифе",
+            adminIntro: `Новый бриф от <b>${cleanName}</b> (${cleanEmail}).`,
             secServices: "1. Выбранные услуги",
             secProject: "2. Детали проекта",
             secUser: "3. Данные клиента",
@@ -142,6 +143,7 @@ export default async function handler(req, res) {
           }
         : {
             adminNotify: "New Brief Notification",
+            adminIntro: `New brief received from <b>${cleanName}</b> (${cleanEmail}).`,
             secServices: "1. Selected Services",
             secProject: "2. Project Details",
             secUser: "3. User Details",
@@ -185,7 +187,7 @@ export default async function handler(req, res) {
           : "";
 
       const detailsHtml = `
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; margin: 20px 0; text-align: left;">
+        <div style="background: #ffffff; border: 1px solid #e0e0e0; overflow: hidden; margin: 20px 0; text-align: left;">
           <div style="background: #f8f8f8; padding: 12px 20px; border-bottom: 1px solid #eee;">
             <span style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #999; text-transform: uppercase;">${
               labels.secServices
@@ -286,16 +288,15 @@ export default async function handler(req, res) {
         `,
       });
 
-      // Б. Письмо администратору (на контактную почту)
-      const adminSubject = isRu ? "Новая заявка" : "New request";
+      // Б. Письмо администратору
       await transporter.sendMail({
         from: `"System" <${SMTP_USER}>`,
         to: "contact@florentseva.com",
         subject: `[BRIEF] ${adminSubject}: ${cleanName}`,
         html: `
-          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; text-align: left; margin: 0;">
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; text-align: left;">
             <h2 style="font-size: 18px; margin-bottom: 10px;">${labels.adminNotify}</h2>
-            <p style="font-size: 14px;">Поступил новый бриф от <b>${cleanName}</b>.</p>
+            <p style="font-size: 14px;">${labels.adminIntro}</p>
             ${detailsHtml}
           </div>
         `,

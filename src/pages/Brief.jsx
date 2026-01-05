@@ -244,6 +244,7 @@ export default function Brief() {
         );
         const finalProjectData = {
           ...projectDetails,
+          userMessage: userDetails.userMessage,
           selected_budget_text: budgets.find((b) => b.id === selectedBudget)
             ?.budgetTextsByCurrency[selectedCurrency],
           selected_deadline_text: deadlines.find(

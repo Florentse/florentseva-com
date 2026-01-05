@@ -126,7 +126,7 @@ export default function Contact() {
               <div className="contact-info__item">
                 <img src={bookingIcon} alt="Booking" className="contact-info__item-icon" />
                 <a
-                  href="#"
+                  href="https://calendly.com/florentseva/free-meeting-call"
                   className="body-small font-weight-medium"
                   target="_blank"
                   rel="noopener noreferrer"

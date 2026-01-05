@@ -293,11 +293,10 @@ export default async function handler(req, res) {
       await transporter.sendMail({
         from: `"System" <${SMTP_USER}>`,
         to: "contact@florentseva.com",
+        replyTo: cleanEmail,
         subject: `[BRIEF] ${adminSubject}: ${cleanName}`,
         html: `
-          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; text-align: left;">
-            <h2 style="font-size: 18px; margin-bottom: 10px;">${labels.adminNotify}</h2>
-            <p style="font-size: 14px;">${labels.adminIntro}</p>
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; text-align: left; margin: 0;">
             ${detailsHtml}
           </div>
         `,

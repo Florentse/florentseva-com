@@ -22,7 +22,7 @@ export default function About() {
 
   return (
     <>
-    {seoData && <Seo {...seoData} />}
+      {seoData && <Seo {...seoData} />}
       {sections.map((section) => {
         // Секция Hero
         if (section.key === "a-hero") {
@@ -102,6 +102,30 @@ export default function About() {
                           {item.h3}
                         </h3>
                         <p className="body-small">{item.p}</p>
+                        {item.certificates && (
+                          <div className="a-experience__certs">
+                            {item.certificates.map((cert, certIdx) => (
+                              <a
+                                key={certIdx}
+                                href={cert.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="a-experience__cert-link"
+                              >
+                                {cert.icon && (
+                                  <img
+                                    src={cert.icon}
+                                    alt={cert.label}
+                                    className="a-experience__cert-icon"
+                                  />
+                                )}
+                                <span className="body-extra-small">
+                                  {cert.label} 
+                                </span>
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </li>
                     ))}
                   </ul>

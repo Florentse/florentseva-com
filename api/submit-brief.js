@@ -112,7 +112,7 @@ export default async function handler(req, res) {
     // Получаем названия из таблицы Service Translations
     const serviceTitles = sNamesData.records?.map((r) => r.fields.title) || [];
 
-    // 6. Отправка писем (внутри блока проверки шаблона)
+    // 6. Отправка письма
     if (tData.records && tData.records.length > 0) {
       const template = tData.records[0].fields;
       const isRu = template.title?.toLowerCase().includes("ru");
@@ -170,27 +170,28 @@ export default async function handler(req, res) {
         auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
       });
 
+      // Вспомогательные функции (теперь ссылки показывают полный URL)
       const row = (label, value) =>
         value
           ? `<tr>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: 600; width: 160px; color: #777; font-size: 12px; text-transform: uppercase;">${label}:</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #111;">${value}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: 600; width: 160px; color: #777; font-size: 12px; text-transform: uppercase; vertical-align: top;">${label}:</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #111; word-break: break-all;">${value}</td>
             </tr>`
           : "";
 
-      const link = (url, text) =>
+      const link = (url) =>
         url
-          ? `<a href="${url}" style="color: #0066cc; text-decoration: none; font-weight: 500;">${text} →</a>`
+          ? `<a href="${url}" style="color: #0066cc; text-decoration: underline;">${url}</a>`
           : "";
 
       const detailsHtml = `
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; margin: 20px 0;">
+        <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; margin: 20px 0; text-align: left;">
           <div style="background: #f8f8f8; padding: 12px 20px; border-bottom: 1px solid #eee;">
             <span style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #999; text-transform: uppercase;">${
               labels.secServices
             }</span>
           </div>
-          <div style="padding: 15px 20px; font-size: 15px; font-weight: 500;">${
+          <div style="padding: 15px 20px; font-size: 15px; font-weight: 500; text-align: left;">${
             serviceTitles.join(", ") || "—"
           }</div>
 
@@ -200,11 +201,11 @@ export default async function handler(req, res) {
             }</span>
           </div>
           <div style="padding: 5px 20px 15px;">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
               ${row(labels.fields.projectName, project_data.projectName)}
               ${row(
                 labels.fields.projectSite,
-                link(project_data.projectSiteLink, "Open Site")
+                link(project_data.projectSiteLink)
               )}
               ${row(
                 labels.fields.projectBusiness,
@@ -212,15 +213,15 @@ export default async function handler(req, res) {
               )}
               ${row(
                 labels.fields.projectBrief,
-                link(project_data.projectBrief, "View Brief")
+                link(project_data.projectBrief)
               )}
               ${row(
                 labels.fields.projectBrandbook,
-                link(project_data.projectBranbook, "View Brandbook")
+                link(project_data.projectBranbook)
               )}
               ${row(
                 labels.fields.projectFigma,
-                link(project_data.projectFigma, "Open Figma")
+                link(project_data.projectFigma)
               )}
               ${row(
                 labels.fields.projectDeadline,
@@ -243,7 +244,7 @@ export default async function handler(req, res) {
             }</span>
           </div>
           <div style="padding: 5px 20px 15px;">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
               ${row(labels.fields.userName, cleanName)}
               ${row(labels.fields.userRole, role)}
               ${row(
@@ -260,21 +261,21 @@ export default async function handler(req, res) {
         </div>
       `;
 
-      // 1. Письмо пользователю
+      // А. Письмо пользователю
       await transporter.sendMail({
         from: `"Florentseva" <${SMTP_USER}>`,
         to: cleanEmail,
         subject: template.subject,
         html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
-            <p style="font-size: 16px;">${template.greeting} ${cleanName}!</p>
-            <p style="font-size: 16px;">${
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; text-align: left; margin: 0;">
+            <p>${template.greeting} ${cleanName}!</p>
+            <p>${
               template.message_body
                 ? template.message_body.replace(/\n/g, "<br/>")
                 : ""
             }</p>
             ${detailsHtml}
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <div style="font-size: 12px; color: #999; margin-bottom: 10px;">${template.footer?.replace(
                 /\n/g,
                 "<br/>"
@@ -285,18 +286,17 @@ export default async function handler(req, res) {
         `,
       });
 
-      // 2. Уведомление администратору (внутри того же блока)
+      // Б. Письмо администратору (на контактную почту)
       const adminSubject = isRu ? "Новая заявка" : "New request";
       await transporter.sendMail({
         from: `"System" <${SMTP_USER}>`,
-        to: SMTP_USER,
+        to: "contact@florentseva.com",
         subject: `[BRIEF] ${adminSubject}: ${cleanName}`,
         html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; background: #fff; padding: 20px;">
-            <h2 style="font-size: 18px; color: #000; margin-bottom: 10px;">${labels.adminNotify}</h2>
-            <p style="font-size: 14px; color: #666;">Поступил новый бриф от <b>${cleanName}</b> (${cleanEmail}).</p>
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; text-align: left; margin: 0;">
+            <h2 style="font-size: 18px; margin-bottom: 10px;">${labels.adminNotify}</h2>
+            <p style="font-size: 14px;">Поступил новый бриф от <b>${cleanName}</b>.</p>
             ${detailsHtml}
-            <div style="font-size: 11px; color: #ccc; margin-top: 20px;">Sent from florentseva.com system</div>
           </div>
         `,
       });

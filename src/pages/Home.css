@@ -150,6 +150,7 @@
   flex-direction: column;
   gap: 0.5rem;
   padding-right: var(--ft--spacing-size-20);
+  
 }
 
 .h-cta {

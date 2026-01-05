@@ -284,6 +284,22 @@ export default async function handler(req, res) {
       });
     }
 
+    // 7. Отправка уведомления администратору
+    const adminSubject = isRu ? "Новая заявка" : "New request";
+    await transporter.sendMail({
+      from: `"Florentseva System" <${SMTP_USER}>`,
+      to: SMTP_USER,
+      subject: `${adminSubject} — ${cleanName}`,
+      html: `
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px;">
+            <h1 style="font-size: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+              ${adminSubject}
+            </h1>
+            ${detailsHtml}
+          </div>
+        `,
+    });
+
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error(">>> [Brief API Fatal Error]:", error.message);

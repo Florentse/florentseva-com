@@ -267,7 +267,7 @@
 .brief-form__success-message {
     padding-top: var(--ft--spacing-size-64);
     margin-left: calc((100% - var(--ft--global-gap)) / 4);
-    max-width: 30rem;
+    max-width: 32rem;
     display: flex;
     flex-direction: column;
     gap: var(--ft--spacing-size-32);

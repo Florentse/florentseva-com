@@ -1,31 +1,32 @@
 // middleware.js
-import { NextResponse } from 'next/server';
-
-const PUBLIC_FILE = /\.(.*)$/;
 
 export function middleware(req) {
-  const { pathname } = req.nextUrl;
+  const url = new URL(req.url);
+  const pathname = url.pathname;
 
-  // 1. Пропускаем статические файлы
-  if (PUBLIC_FILE.test(pathname)) return;
+  // 1. Пропускаем статические файлы (с точкой в названии)
+  if (pathname.includes('.')) return;
 
-  // 2. Если в URL есть /en — убираем его (делаем редирект на чистый адрес)
+  // 2. Если в URL есть /en — убираем его (редирект на корень)
   if (pathname.startsWith('/en')) {
-    const cleanPath = pathname.replace(/^\/en/, '') || '/';
-    return NextResponse.redirect(new URL(cleanPath, req.url));
+    url.pathname = pathname.replace(/^\/en/, '') || '/';
+    return Response.redirect(url);
   }
 
-  // 3. Авто-редирект на /ru только для главной страницы и только если нет куки выбора
+  // 3. Авто-редирект на /ru только для главной страницы
   if (pathname === '/') {
-    const cookieLang = req.cookies.get('app_lang')?.value;
+    const cookie = req.headers.get('cookie') || '';
     
-    if (!cookieLang) {
+    // Проверяем наличие куки выбора языка
+    if (!cookie.includes('app_lang=')) {
       const acceptLang = req.headers.get('accept-language') || '';
-      if (acceptLang.startsWith('ru')) {
-        return NextResponse.redirect(new URL('/ru', req.url));
+      if (acceptLang.toLowerCase().startsWith('ru')) {
+        url.pathname = '/ru';
+        return Response.redirect(url);
       }
     }
   }
 
-  return NextResponse.next();
+  // Если условий выше нет, просто продолжаем выполнение
+  return;
 }

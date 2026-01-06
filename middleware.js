@@ -15,10 +15,7 @@ export async function middleware(req) {
     const isRu = pathname.startsWith('/ru');
     const langCode = isRu ? 'ru' : 'en';
     
-    // Извлекаем слаг страницы
-    // /ru/services/web-design -> web-design
-    // /services/web-design -> web-design
-    // /ru -> home
+    // Определяем слаг для поиска в базе
     let slug = pathname.replace(/^\/ru/, '').replace(/^\//, '') || 'home';
     if (slug.includes('/')) {
         slug = slug.split('/').pop();
@@ -29,9 +26,8 @@ export async function middleware(req) {
       const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
       const tableName = encodeURIComponent("Page Meta Translations");
 
-      // Фильтр: ищем запись, где PageSlug совпадает со слагом, а LocaleCode с языком
-      // Убедитесь, что в Airtable есть колонки {PageSlug} и {LocaleCode}
-      const filter = `AND({PageSlug}='${slug}', {LocaleCode}='${langCode}')`;
+      // ВАЖНО: колонки page_id_hidden и locale_id_hidden в Airtable должны возвращать строку (slug и code)
+      const filter = `AND({page_id_hidden}='${slug}', {locale_id_hidden}='${langCode}')`;
       const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
 
       const response = await fetch(airtableUrl, {
@@ -39,30 +35,38 @@ export async function middleware(req) {
       });
       
       const data = await response.json();
-      const fields = data.records?.[0]?.fields || {};
+      const fields = data.records?.[0]?.fields;
 
-      // Формируем HTML с данными из Airtable
-      const html = `
-        <!DOCTYPE html>
-        <html lang="${langCode}">
-        <head>
-          <meta charset="UTF-8">
-          <title>${fields.title || "Florentseva"}</title>
-          <meta name="description" content="${fields.description || ""}">
-          <meta property="og:type" content="website">
-          <meta property="og:url" content="${url.href}">
-          <meta property="og:title" content="${fields.og_title || fields.title}">
-          <meta property="og:description" content="${fields.og_description || fields.description}">
-          <meta property="og:image" content="${fields.og_image || 'https://florentseva.com/og-image.png'}">
-          <meta name="twitter:card" content="summary_large_image">
-        </head>
-        <body></body>
-        </html>
-      `.trim();
+      if (fields) {
+        // Используем точные названия ваших колонок из Page Meta Translations
+        const title = fields['title-tag'] || "Florentseva";
+        const description = fields['meta_description'] || "";
+        // Если в open_graph у вас прямая ссылка (текст), оставляем так. 
+        // Если это поле типа Attachment, используйте: fields['open_graph']?.[0]?.url
+        const ogImage = fields['open_graph'] || 'https://florentseva.com/og-image.png';
 
-      return new Response(html, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      });
+        const html = `
+          <!DOCTYPE html>
+          <html lang="${langCode}">
+          <head>
+            <meta charset="UTF-8">
+            <title>${title}</title>
+            <meta name="description" content="${description}">
+            <meta property="og:type" content="website">
+            <meta property="og:url" content="${url.href}">
+            <meta property="og:title" content="${title}">
+            <meta property="og:description" content="${description}">
+            <meta property="og:image" content="${ogImage}">
+            <meta name="twitter:card" content="summary_large_image">
+          </head>
+          <body></body>
+          </html>
+        `.trim();
+
+        return new Response(html, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        });
+      }
     } catch (e) {
       // Если что-то пошло не так, Middleware просто пропустит запрос к обычному index.html
       console.error("Middleware Airtable Error:", e);

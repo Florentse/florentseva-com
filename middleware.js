@@ -13,83 +13,63 @@ export async function middleware(req) {
     const isRu = pathname.startsWith("/ru");
     const langCode = isRu ? "ru" : "en";
     let slug = pathname.replace(/^\/ru/, "").replace(/^\//, "") || "home";
-    if (slug.includes("/")) {
-      slug = slug.split("/").pop();
-    }
+    if (slug.includes("/")) slug = slug.split("/").pop();
 
     try {
-      const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-      const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-      const tableName = encodeURIComponent("Page Meta Translations");
+      const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = process.env;
 
-      // Используем SEARCH для Lookup полей, так как они могут приходить как массивы
+      // Если ключи не прописаны в Vercel - мы сразу это увидим
+      if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
+        return new Response("Config Missing", { headers: { "x-seo-status": "error-env-missing" } });
+      }
+
+      // Используем SEARCH, так как для Lookup-полей это самый надежный способ в Airtable
       const filter = `AND(SEARCH('${slug}', {page_slug}) > 0, SEARCH('${langCode}', {locale_code}) > 0)`;
-      const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
+      const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Page%20Meta%20Translations?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
 
       const response = await fetch(airtableUrl, {
-        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
-        // Ограничиваем время ожидания, чтобы Edge-функция не висла
-        signal: AbortSignal.timeout(4000) 
+        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` }
       });
 
       const data = await response.json();
       const fields = data.records?.[0]?.fields;
 
-      if (fields) {
-        const title = fields["title-tag"] || "Florentseva";
-        const description = fields["meta_description"] || "";
-        
-        let ogImage = "https://florentseva.com/og-image.png";
-        if (Array.isArray(fields["open_graph"]) && fields["open_graph"][0]?.url) {
-          ogImage = fields["open_graph"][0].url;
-        } else if (typeof fields["open_graph"] === "string") {
-          ogImage = fields["open_graph"];
-        }
-
-        const html = `<!DOCTYPE html>
-<html lang="${langCode}">
-<head>
-  <meta charset="UTF-8">
-  <title>${title}</title>
-  <meta name="description" content="${description}">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="${url.href}">
-  <meta property="og:title" content="${title}">
-  <meta property="og:description" content="${description}">
-  <meta property="og:image" content="${ogImage}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${ogImage}">
-</head>
-<body></body>
-</html>`.trim();
-
-        return new Response(html, {
+      // ДИАГНОСТИКА: Если в базе пусто - мы вернем заголовок с параметрами поиска
+      if (!fields) {
+        return new Response("Not found in Airtable", {
           headers: { 
-            "Content-Type": "text/html; charset=utf-8",
-            "x-seo-status": "dynamic-hit" // Метка для проверки
-          },
+            "x-seo-status": "airtable-empty",
+            "x-debug-slug": slug,
+            "x-debug-lang": langCode
+          }
         });
       }
+
+      // Если данные есть - формируем HTML
+      const title = fields["title-tag"] || "Florentseva";
+      const description = fields["meta_description"] || "";
+      let ogImage = "https://florentseva.com/og-image.png";
+      if (Array.isArray(fields["open_graph"]) && fields["open_graph"][0]?.url) {
+        ogImage = fields["open_graph"][0].url;
+      }
+
+      const html = `<!DOCTYPE html><html lang="${langCode}"><head><meta charset="UTF-8"><title>${title}</title><meta name="description" content="${description}"><meta property="og:title" content="${title}"><meta property="og:image" content="${ogImage}"></head><body></body></html>`;
+
+      return new Response(html, {
+        headers: { 
+          "Content-Type": "text/html; charset=utf-8",
+          "x-seo-status": "dynamic-hit",
+          "x-debug-slug": slug
+        },
+      });
     } catch (e) {
-      // Ошибка будет видна в логах Vercel (Deployment -> Logs)
-      console.error("Middleware Airtable Error:", e.message);
+      return new Response("Error", { headers: { "x-seo-status": "middleware-crash", "x-error": e.message } });
     }
   }
 
-  // Логика редиректов для пользователей
+  // Остальная логика редиректов...
   if (pathname.startsWith("/en")) {
     url.pathname = pathname.replace(/^\/en/, "") || "/";
     return Response.redirect(url);
-  }
-
-  if (pathname === "/") {
-    const cookie = req.headers.get("cookie") || "";
-    if (!cookie.includes("app_lang=")) {
-      const acceptLang = req.headers.get("accept-language") || "";
-      if (acceptLang.toLowerCase().startsWith("ru")) {
-        url.pathname = "/ru";
-        return Response.redirect(url);
-      }
-    }
   }
 }

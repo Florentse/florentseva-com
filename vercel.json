@@ -26,48 +26,44 @@
       ]
     }
   ],
-  "rewrites": {
-    "beforeFiles": [
-      {
-        "source": "/",
-        "has": [
-          {
-            "type": "header",
-            "key": "user-agent",
-            "value": ".*(TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot).*"
-          }
-        ],
-        "destination": "/api/bot-seo?url=https://www.florentseva.com/"
-      },
-      {
-        "source": "/(ru|)(.*)",
-        "has": [
-          {
-            "type": "header",
-            "key": "user-agent",
-            "value": ".*(TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot).*"
-          }
-        ],
-        "destination": "/api/bot-seo?url=https://www.florentseva.com/$1$2"
-      }
-    ],
-    "afterFiles": [
-      {
-        "source": "/site.webmanifest",
-        "destination": "/site.webmanifest"
-      },
-      {
-        "source": "/sitemap.xml",
-        "destination": "/api/sitemap"
-      },
-      {
-        "source": "/(ru|en)/:path*",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/(.*)",
-        "destination": "/index.html"
-      }
-    ]
-  }
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot).*"
+        }
+      ],
+      "destination": "/api/bot-seo?url=https://www.florentseva.com/"
+    },
+    {
+      "source": "/(ru|)(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot).*"
+        }
+      ],
+      "destination": "/api/bot-seo?url=https://www.florentseva.com/$1$2"
+    },
+    {
+      "source": "/site.webmanifest",
+      "destination": "/site.webmanifest"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/(ru|en)/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

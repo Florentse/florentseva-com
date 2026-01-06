@@ -3,22 +3,25 @@
 export async function middleware(req) {
   const url = new URL(req.url);
   const pathname = url.pathname;
-  const userAgent = req.headers.get('user-agent') || '';
+  const userAgent = req.headers.get("user-agent") || "";
 
   // 1. Пропускаем статические файлы
-  if (pathname.includes('.')) return;
+  if (pathname.includes(".")) return;
 
   // 2. Детекция ботов (Telegram, WhatsApp, Open Graph боты)
-  const isBot = /TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot/i.test(userAgent);
+  const isBot =
+    /TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot/i.test(
+      userAgent
+    );
 
   if (isBot) {
-    const isRu = pathname.startsWith('/ru');
-    const langCode = isRu ? 'ru' : 'en';
-    
+    const isRu = pathname.startsWith("/ru");
+    const langCode = isRu ? "ru" : "en";
+
     // Определяем слаг для поиска в базе
-    let slug = pathname.replace(/^\/ru/, '').replace(/^\//, '') || 'home';
-    if (slug.includes('/')) {
-        slug = slug.split('/').pop();
+    let slug = pathname.replace(/^\/ru/, "").replace(/^\//, "") || "home";
+    if (slug.includes("/")) {
+      slug = slug.split("/").pop();
     }
 
     try {
@@ -26,24 +29,34 @@ export async function middleware(req) {
       const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
       const tableName = encodeURIComponent("Page Meta Translations");
 
-      // ВАЖНО: колонки page_id_hidden и locale_id_hidden в Airtable должны возвращать строку (slug и code)
-      const filter = `AND({page_id_hidden}='${slug}', {locale_id_hidden}='${langCode}')`;
-      const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
+      // Используем новые текстовые lookup-поля для точного поиска
+      const filter = `AND({page_slug}='${slug}', {locale_code}='${langCode}')`;
+      const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}?filterByFormula=${encodeURIComponent(
+        filter
+      )}&maxRecords=1`;
 
       const response = await fetch(airtableUrl, {
-        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` }
+        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
       });
-      
+
       const data = await response.json();
       const fields = data.records?.[0]?.fields;
 
       if (fields) {
-        // Используем точные названия ваших колонок из Page Meta Translations
-        const title = fields['title-tag'] || "Florentseva";
-        const description = fields['meta_description'] || "";
-        // Если в open_graph у вас прямая ссылка (текст), оставляем так. 
-        // Если это поле типа Attachment, используйте: fields['open_graph']?.[0]?.url
-        const ogImage = fields['open_graph'] || 'https://florentseva.com/og-image.png';
+        // Используем ваши оригинальные названия колонок
+        const title = fields["title-tag"] || "Florentseva";
+        const description = fields["meta_description"] || "";
+
+        // Обработка картинки (Attachment или строка)
+        let ogImage = "https://florentseva.com/og-image.png";
+        if (
+          Array.isArray(fields["open_graph"]) &&
+          fields["open_graph"][0]?.url
+        ) {
+          ogImage = fields["open_graph"][0].url;
+        } else if (typeof fields["open_graph"] === "string") {
+          ogImage = fields["open_graph"];
+        }
 
         const html = `
           <!DOCTYPE html>
@@ -64,7 +77,7 @@ export async function middleware(req) {
         `.trim();
 
         return new Response(html, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          headers: { "Content-Type": "text/html; charset=utf-8" },
         });
       }
     } catch (e) {
@@ -74,17 +87,17 @@ export async function middleware(req) {
   }
 
   // 3. Обычная логика редиректов (для пользователей)
-  if (pathname.startsWith('/en')) {
-    url.pathname = pathname.replace(/^\/en/, '') || '/';
+  if (pathname.startsWith("/en")) {
+    url.pathname = pathname.replace(/^\/en/, "") || "/";
     return Response.redirect(url);
   }
 
-  if (pathname === '/') {
-    const cookie = req.headers.get('cookie') || '';
-    if (!cookie.includes('app_lang=')) {
-      const acceptLang = req.headers.get('accept-language') || '';
-      if (acceptLang.toLowerCase().startsWith('ru')) {
-        url.pathname = '/ru';
+  if (pathname === "/") {
+    const cookie = req.headers.get("cookie") || "";
+    if (!cookie.includes("app_lang=")) {
+      const acceptLang = req.headers.get("accept-language") || "";
+      if (acceptLang.toLowerCase().startsWith("ru")) {
+        url.pathname = "/ru";
         return Response.redirect(url);
       }
     }

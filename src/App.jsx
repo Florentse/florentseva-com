@@ -41,18 +41,35 @@ export default function App() {
 
         <main>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/services/:slug" element={<ServiceTemplate />} />
-            <Route path="/cases" element={<Cases />} />
-            <Route path="/cases/:slug" element={<CaseTemplate />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/brief" element={<Brief />} />
-            <Route path="*" element={<NotFound />} />
+            {/* Группа маршрутов без префикса (EN по умолчанию) */}
+            <Route path="/">
+              <Route index element={<Home />} />
+              <Route path="services" element={<Services />} />
+              <Route path="services/:slug" element={<ServiceTemplate />} />
+              <Route path="cases" element={<Cases />} />
+              <Route path="cases/:slug" element={<CaseTemplate />} />
+              <Route path="products" element={<Products />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="about" element={<About />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="brief" element={<Brief />} />
+            </Route>
+
+            {/* Группа маршрутов с префиксом /ru */}
+            <Route path="/ru">
+              <Route index element={<Home />} />
+              <Route path="services" element={<Services />} />
+              <Route path="services/:slug" element={<ServiceTemplate />} />
+              <Route path="cases" element={<Cases />} />
+              <Route path="cases/:slug" element={<CaseTemplate />} />
+              <Route path="products" element={<Products />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="about" element={<About />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="brief" element={<Brief />} />
+            </Route>
           </Routes>
         </main>
 

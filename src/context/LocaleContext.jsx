@@ -7,37 +7,35 @@ export function LocaleProvider({ children }) {
   const { locales, loading } = useLocales();
   const [currentLocale, setCurrentLocale] = useState(null);
 
-  useEffect(() => {
-    if (!loading && locales.length > 0 && !currentLocale) {
-      // 1. Проверяем ручной выбор в localStorage
-      const savedCode = localStorage.getItem("app_lang");
-
-      // 2. Если в localStorage пусто, проверяем язык браузера
-      let targetCode = savedCode;
-      if (!targetCode) {
-        const browserLang = navigator.language || navigator.userLanguage;
-        if (browserLang.startsWith("ru")) {
-          targetCode = "ru"; // Код должен совпадать с тем, что в вашей базе Airtable
-        }
-      }
+useEffect(() => {
+    if (!loading && locales.length > 0) {
+      // Определяем код из URL: если начинается с /ru — значит 'ru', иначе 'en'
+      const isRussianPath = window.location.pathname.startsWith("/ru");
+      const targetCode = isRussianPath ? "ru" : "en";
 
       const foundLoc = locales.find((l) => l.code === targetCode);
+      // Если по коду не нашли, берем тот, где is_default: true
+      const finalLoc = foundLoc || locales.find((l) => l.is_default) || locales[0];
 
-      // 3. Берем найденный (из памяти или браузера), иначе дефолтный из базы, иначе первый попавшийся
-      const finalLoc =
-        foundLoc || locales.find((l) => l.is_default) || locales[0];
-
-      setCurrentLocale(finalLoc);
+      // Обновляем состояние только если язык действительно другой
+      if (!currentLocale || currentLocale.code !== finalLoc.code) {
+        setCurrentLocale(finalLoc);
+      }
     }
-  }, [locales, loading, currentLocale]);
+  }, [locales, loading, window.location.pathname]); // Добавили слежение за путем
 
-  // Смена языка:
   const changeLocale = (code) => {
     const found = locales.find((l) => l.code === code);
     if (found) {
-      localStorage.setItem("app_lang", code);
+      const cleanPath = window.location.pathname.replace(/^\/ru/, "");
+      // Если выбрали ru — добавляем префикс, если en — убираем (корень)
+      const newPath = code === "ru" ? `/ru${cleanPath}` : (cleanPath || "/");
 
-      window.location.reload();
+      // Сохраняем в Cookie для Middleware (Vercel)
+      document.cookie = `app_lang=${code}; path=/; max-age=31536000`; 
+      
+      // Перенаправляем
+      window.location.href = newPath;
     }
   };
 

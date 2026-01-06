@@ -35,6 +35,10 @@
       "destination": "/api/sitemap"
     },
     {
+      "source": "/(ru|en)/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

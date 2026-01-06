@@ -7,14 +7,18 @@ export default async function handler(req, res) {
 
   const isRu = pathname.startsWith("/ru");
   const langCode = isRu ? "ru" : "en";
-  
+
   // Извлекаем слаг (home, services, и т.д.)
   let slug = pathname.replace(/^\/ru/, "").replace(/^\//, "") || "home";
   if (slug.includes("/")) slug = slug.split("/").pop();
 
   try {
     const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = process.env;
-    const filter = `AND(SEARCH('${slug}', {page_slug}) > 0, SEARCH('${langCode}', {locale_code}) > 0)`;
+    
+    // Используем ARRAYJOIN, чтобы превратить массив lookup-поля в строку для сравнения
+    // Это гарантирует, что мы ищем точное совпадение со слагом и кодом
+    const filter = `AND(ARRAYJOIN({page_slug})='${slug}', ARRAYJOIN({locale_code})='${langCode}')`;
+    
     const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Page%20Meta%20Translations?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
 
     const response = await fetch(airtableUrl, {
@@ -25,13 +29,13 @@ export default async function handler(req, res) {
     const fields = data.records?.[0]?.fields;
 
     if (!fields) {
-      // Если в базе нет — отдаем пустую страницу, Vercel подхватит дефолт
-      return res.status(404).send("Not found in Airtable");
+      // Для диагностики в терминале теперь выводим, что именно пришло в фильтр
+      return res.status(404).send(`Not found. Slug: ${slug}, Lang: ${langCode}. Formula used: ${filter}`);
     }
 
     const title = fields["title-tag"] || "Florentseva";
     const description = fields["meta_description"] || "";
-    
+
     let ogImage = "https://florentseva.com/og-image.png";
     if (Array.isArray(fields["open_graph"]) && fields["open_graph"][0]?.url) {
       ogImage = fields["open_graph"][0].url;
@@ -58,7 +62,6 @@ export default async function handler(req, res) {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate");
     return res.status(200).send(html);
-
   } catch (e) {
     return res.status(500).send("Internal Error");
   }

@@ -7,7 +7,7 @@ export async function middleware(req) {
 
   const isBot = /TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot/i.test(userAgent);
 
-  // Обрабатываем только главную страницу для ботов, чтобы обойти приоритет index.html
+  // Перехватываем ботов на главной (корень и /ru), чтобы обойти кэш index.html
   if (isBot && (pathname === "/" || pathname === "/ru")) {
     const langCode = pathname === "/ru" ? "ru" : "en";
     const slug = "home";
@@ -15,7 +15,7 @@ export async function middleware(req) {
     try {
       const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = process.env;
       
-      // Используем ту же проверенную логику с ARRAYJOIN
+      // ИСПОЛЬЗУЕМ ARRAYJOIN: так как lookup-поля в Airtable — это массивы
       const filter = `AND(ARRAYJOIN({page_slug})='${slug}', ARRAYJOIN({locale_code})='${langCode}')`;
       const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Page%20Meta%20Translations?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
 
@@ -29,7 +29,11 @@ export async function middleware(req) {
       if (fields) {
         const title = fields["title-tag"] || "Florentseva";
         const description = fields["meta_description"] || "";
-        let ogImage = fields["open_graph"]?.[0]?.url || "https://florentseva.com/og-image.png";
+        let ogImage = "https://florentseva.com/og-image.png";
+        
+        if (Array.isArray(fields["open_graph"]) && fields["open_graph"][0]?.url) {
+          ogImage = fields["open_graph"][0].url;
+        }
 
         const html = `<!DOCTYPE html><html lang="${langCode}"><head><meta charset="UTF-8"><title>${title}</title><meta name="description" content="${description}"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:image" content="${ogImage}"><meta property="og:url" content="${url.href}"><meta name="twitter:card" content="summary_large_image"></head><body></body></html>`;
 
@@ -38,11 +42,11 @@ export async function middleware(req) {
         });
       }
     } catch (e) {
-      return; // В случае ошибки Middleware пропустит запрос к обычному index.html
+      return; // Если ошибка API, отдаем обычный index.html
     }
   }
 
-  // Логика редиректа для обычных пользователей (чтобы работало автоопределение языка)
+  // Редирект для обычных пользователей (авто-язык)
   if (!isBot && pathname === "/") {
     const cookie = req.headers.get("cookie") || "";
     if (!cookie.includes("app_lang=")) {
@@ -53,6 +57,4 @@ export async function middleware(req) {
       }
     }
   }
-
-  return;
 }

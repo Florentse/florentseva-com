@@ -7,7 +7,7 @@ export async function middleware(req) {
 
   const isBot = /TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot/i.test(userAgent);
 
-  // Перехватываем ботов на главной (корень и /ru), чтобы обойти кэш index.html
+  // Перехватываем ботов ТОЛЬКО на главной, чтобы обойти приоритет статики index.html
   if (isBot && (pathname === "/" || pathname === "/ru")) {
     const langCode = pathname === "/ru" ? "ru" : "en";
     const slug = "home";
@@ -15,7 +15,6 @@ export async function middleware(req) {
     try {
       const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = process.env;
       
-      // ИСПОЛЬЗУЕМ ARRAYJOIN: так как lookup-поля в Airtable — это массивы
       const filter = `AND(ARRAYJOIN({page_slug})='${slug}', ARRAYJOIN({locale_code})='${langCode}')`;
       const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Page%20Meta%20Translations?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
 
@@ -29,11 +28,7 @@ export async function middleware(req) {
       if (fields) {
         const title = fields["title-tag"] || "Florentseva";
         const description = fields["meta_description"] || "";
-        let ogImage = "https://florentseva.com/og-image.png";
-        
-        if (Array.isArray(fields["open_graph"]) && fields["open_graph"][0]?.url) {
-          ogImage = fields["open_graph"][0].url;
-        }
+        let ogImage = fields["open_graph"]?.[0]?.url || "https://florentseva.com/og-image.png";
 
         const html = `<!DOCTYPE html><html lang="${langCode}"><head><meta charset="UTF-8"><title>${title}</title><meta name="description" content="${description}"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:image" content="${ogImage}"><meta property="og:url" content="${url.href}"><meta name="twitter:card" content="summary_large_image"></head><body></body></html>`;
 
@@ -42,11 +37,11 @@ export async function middleware(req) {
         });
       }
     } catch (e) {
-      return; // Если ошибка API, отдаем обычный index.html
+      return; // В случае ошибки отдаем стандартный index.html
     }
   }
 
-  // Редирект для обычных пользователей (авто-язык)
+  // Редирект для людей: автоопределение языка на главной
   if (!isBot && pathname === "/") {
     const cookie = req.headers.get("cookie") || "";
     if (!cookie.includes("app_lang=")) {

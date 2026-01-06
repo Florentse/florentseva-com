@@ -8,8 +8,9 @@ export default async function handler(req, res) {
   const isRu = pathname.startsWith("/ru");
   const langCode = isRu ? "ru" : "en";
 
-  // Определяем, является ли страница услугой
+  // Определяем раздел страницы
   const isServicePage = pathname.includes('/services/');
+  const isCasePage = pathname.includes('/cases/');
 
   // Извлекаем слаг
   let slug = pathname.replace(/^\/ru/, "").replace(/^\//, "") || "home";
@@ -18,20 +19,32 @@ export default async function handler(req, res) {
   try {
     const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = process.env;
 
-    // Настраиваем параметры в зависимости от типа страницы
-    const config = isServicePage ? {
-      table: "Service Translations",
-      slugField: "{service_slug}", // Должен быть Lookup на slug из таблицы Services
-      titleField: "title",
-      descField: "about_service"
-    } : {
-      table: "Page Meta Translations",
-      slugField: "{page_slug}",
-      titleField: "title-tag",
-      descField: "meta_description"
-    };
+    // Конфигурация полей для каждого типа таблицы
+    let config;
+    if (isServicePage) {
+      config = {
+        table: "Service Translations",
+        slugField: "{service_slug}", 
+        titleField: "title",
+        descField: "about_service"
+      };
+    } else if (isCasePage) {
+      config = {
+        table: "Case Translations",
+        slugField: "{case_slug}",
+        titleField: "case_title_lookup", // Lookup заголовка из таблицы Cases
+        descField: "meta_description"
+      };
+    } else {
+      config = {
+        table: "Page Meta Translations",
+        slugField: "{page_slug}",
+        titleField: "title-tag",
+        descField: "meta_description"
+      };
+    }
 
-    // Формула поиска (используем ARRAYJOIN для Lookup-полей)
+    // Формула поиска с учетом того, что lookup-поля — это массивы
     const filter = `AND(ARRAYJOIN(${config.slugField})='${slug}', ARRAYJOIN({locale_code})='${langCode}')`;
     const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(config.table)}?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
 
@@ -43,7 +56,7 @@ export default async function handler(req, res) {
     const fields = data.records?.[0]?.fields;
 
     if (!fields) {
-      return res.status(404).send(`SEO not found. Table: ${config.table}, Slug: ${slug}, Lang: ${langCode}`);
+      return res.status(404).send(`SEO not found for ${slug}`);
     }
 
     const title = fields[config.titleField] || "Florentseva";
@@ -52,6 +65,8 @@ export default async function handler(req, res) {
     let ogImage = "https://florentseva.com/og-image.png";
     if (Array.isArray(fields["open_graph"]) && fields["open_graph"][0]?.url) {
       ogImage = fields["open_graph"][0].url;
+    } else if (fields["hero_image_lookup"]) { // Дополнительная проверка для кейсов
+       ogImage = Array.isArray(fields["hero_image_lookup"]) ? fields["hero_image_lookup"][0].url : ogImage;
     }
 
     const html = `
@@ -77,6 +92,6 @@ export default async function handler(req, res) {
     return res.status(200).send(html);
 
   } catch (e) {
-    return res.status(500).send("Internal SEO Error");
+    return res.status(500).send("SEO Generation Error");
   }
 }

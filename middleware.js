@@ -5,9 +5,18 @@ export async function middleware(req) {
   const pathname = url.pathname;
   const userAgent = req.headers.get("user-agent") || "";
 
-  if (pathname.includes(".")) return;
+  // Пропускаем только расширения (картинки, скрипты), но НЕ папки /ru/
+  if (pathname.includes('.') && !pathname.startsWith('/ru')) return;
 
-  const isBot = /TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot/i.test(userAgent);
+  // 1. Упрощаем проверку бота для теста
+  const isBot = /bot|telegram|facebook|whatsapp|twitter|slack/i.test(userAgent);
+
+  // 2. ДОБАВЛЯЕМ ЖЕСТКИЙ ДЕБАГ (будет виден в curl всем)
+  const debugHeaders = {
+    "x-middleware-alive": "true",
+    "x-debug-ua": userAgent,
+    "x-debug-bot": isBot.toString()
+  };
 
   if (isBot) {
     const isRu = pathname.startsWith("/ru");
@@ -18,12 +27,12 @@ export async function middleware(req) {
     try {
       const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = process.env;
 
-      // Если ключи не прописаны в Vercel - мы сразу это увидим
       if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
-        return new Response("Config Missing", { headers: { "x-seo-status": "error-env-missing" } });
+        return new Response("Config Missing", { 
+          headers: { ...debugHeaders, "x-seo-status": "error-env-missing" } 
+        });
       }
 
-      // Используем SEARCH, так как для Lookup-полей это самый надежный способ в Airtable
       const filter = `AND(SEARCH('${slug}', {page_slug}) > 0, SEARCH('${langCode}', {locale_code}) > 0)`;
       const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Page%20Meta%20Translations?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`;
 
@@ -34,42 +43,39 @@ export async function middleware(req) {
       const data = await response.json();
       const fields = data.records?.[0]?.fields;
 
-      // ДИАГНОСТИКА: Если в базе пусто - мы вернем заголовок с параметрами поиска
       if (!fields) {
         return new Response("Not found in Airtable", {
           headers: { 
+            ...debugHeaders,
             "x-seo-status": "airtable-empty",
-            "x-debug-slug": slug,
-            "x-debug-lang": langCode
+            "x-debug-slug": slug
           }
         });
       }
 
-      // Если данные есть - формируем HTML
       const title = fields["title-tag"] || "Florentseva";
       const description = fields["meta_description"] || "";
-      let ogImage = "https://florentseva.com/og-image.png";
-      if (Array.isArray(fields["open_graph"]) && fields["open_graph"][0]?.url) {
-        ogImage = fields["open_graph"][0].url;
-      }
+      let ogImage = fields["open_graph"]?.[0]?.url || "https://florentseva.com/og-image.png";
 
       const html = `<!DOCTYPE html><html lang="${langCode}"><head><meta charset="UTF-8"><title>${title}</title><meta name="description" content="${description}"><meta property="og:title" content="${title}"><meta property="og:image" content="${ogImage}"></head><body></body></html>`;
 
       return new Response(html, {
         headers: { 
+          ...debugHeaders,
           "Content-Type": "text/html; charset=utf-8",
-          "x-seo-status": "dynamic-hit",
-          "x-debug-slug": slug
+          "x-seo-status": "dynamic-hit"
         },
       });
     } catch (e) {
-      return new Response("Error", { headers: { "x-seo-status": "middleware-crash", "x-error": e.message } });
+      return new Response("Error", { 
+        headers: { ...debugHeaders, "x-seo-status": "middleware-crash", "x-error": e.message } 
+      });
     }
   }
 
-  // Остальная логика редиректов...
-  if (pathname.startsWith("/en")) {
-    url.pathname = pathname.replace(/^\/en/, "") || "/";
-    return Response.redirect(url);
-  }
+  // Для обычных юзеров просто добавляем заголовок "alive", чтобы знать, что Middleware работает
+  const res = Response.next ? undefined : null; // В среде Vercel Edge просто выходим
+  
+  // Если это не бот, мы позволяем Vercel продолжить рендеринг, но в curl мы увидим x-middleware-alive
+  return new Response(null, { headers: debugHeaders }); 
 }

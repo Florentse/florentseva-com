@@ -28,6 +28,17 @@
   ],
   "rewrites": [
     {
+      "source": "/index.html",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(TelegramBot|facebookexternalhit|WhatsApp|Twitterbot|Slackbot).*"
+        }
+      ],
+      "destination": "/api/bot-seo?url=https://www.florentseva.com/"
+    },
+    {
       "source": "/",
       "has": [
         {

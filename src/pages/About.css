@@ -122,7 +122,11 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--ft--global-gap);
 
-  
+    @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--ft--spacing-size-32);
+  }
 }
 
 .a-experience__cert-link {

@@ -123,9 +123,9 @@
   gap: var(--ft--global-gap);
 
     @media (max-width: 768px) {
+    display: flex;
     flex-direction: column;
     text-align: center;
-    gap: var(--ft--spacing-size-32);
   }
 }
 
